@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -43,7 +44,12 @@ public class ClientSimple {
 			// Envoie au server un message
 			System.out.println("Envoi du message: " + "Merci!");
 			out.println("Merci!");
-		} catch (IOException e) {
+			// Attends que le server termine la connexion avant de terminer le programme
+			while (in.read() != -1) {
+
+			}
+			socket.close();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

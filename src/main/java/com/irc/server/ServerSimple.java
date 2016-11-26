@@ -15,8 +15,8 @@ public class ServerSimple {
 
 		try {
 			// Crée un socket en attente de connexion sur le port défini
-			ServerSocket serverSocket = new ServerSocket(portNumber);
 			while (true) {
+				ServerSocket serverSocket = new ServerSocket(portNumber);
 				System.out.println("En attente de connexion au serveur sur le port: " + portNumber);
 				// Attends une connexion et l'accepte (action bloquante)
 				Socket clientSocket = serverSocket.accept();
@@ -31,8 +31,16 @@ public class ServerSimple {
 				// Attends que le client réponde et affiche sa réponse
 				String clientInput = in.readLine();
 				System.out.println("Message du client: " + clientInput);
+				// Attends 3 secondes avant de fermer la connexion
+				try {
+					Thread.sleep(3000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				// Ferme la connexion au client
 				clientSocket.close();
+				serverSocket.close();
 				System.out.println("Connexion terminée.");
 				System.out.println("");
 			}
