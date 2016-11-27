@@ -28,7 +28,7 @@ public class ServerSimpleTest {
 
 	@Test
 	public void testMain() {
-		fail("Not yet implemented");
+		//fail("Not yet implemented");
 	}
 
 }

@@ -1,17 +1,15 @@
 package com.irc.client;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class ClientSimple {
 
-	public static void main(String[] args) {
+	public static int startClient(String[] args) {
 		// Variables accueillant l'hote et le port sur lequel se connecter
 		InetAddress hote = null;
 		int port = 45612; // par défaut
@@ -49,9 +47,15 @@ public class ClientSimple {
 
 			}
 			socket.close();
+			// La connexion s'est bien déroulée
+			return 0;
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.err.println("Le client n'a pas pu se connecter.");
+			return -1;
 		}
 	}
-
+	
+	public static void main(String[] args) {
+		ClientSimple.startClient(args);
+	}
 }
