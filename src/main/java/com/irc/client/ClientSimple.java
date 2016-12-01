@@ -1,20 +1,61 @@
 package com.irc.client;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Scanner;
 
-public class ClientSimple {
+import javax.swing.plaf.synth.SynthSpinnerUI;
 
-	public static int startClient(String[] args) {
-		// Variables accueillant l'hote et le port sur lequel se connecter
+public class ClientSimple implements Runnable {
+	
+	private Socket _socket = null;
+	private PrintWriter _out = null;
+	private BufferedReader _in = null;
+	public final static int DEFAULT_PORT = 45612;
+	private volatile boolean _isRunning = true;
+	
+	public void connectToServer(InetAddress hote, int port) throws IOException {
+		_socket = new Socket(hote, port);
+		_out = new PrintWriter(_socket.getOutputStream(), true);
+		_in = new BufferedReader(new InputStreamReader(_socket.getInputStream()));
+	}
+	
+	public void sendMessage(String message) {
+		_out.println(message);
+	}
+	
+	public String receiveMessage() throws IOException {
+		return _in.readLine();
+	}
+	
+	public void disconnectFromServer() throws IOException {
+		_isRunning = false;
+		_out.close();
+		_in.close();
+		_socket.close();
+	}
+
+	@Override
+	public void run() {
+		while(_isRunning) {
+			String message = null;
+			try {
+				message = receiveMessage();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			System.out.println(message);
+		}
+	}
+	
+	public static void main(String[] args) {
 		InetAddress hote = null;
-		int port = 45612; // par défaut
-		Socket socket = null;
-
+		int port = ClientSimple.DEFAULT_PORT;
 		// Récupère les informations de connexion depuis les arguments du programme
 		try {
 			if (args.length >= 1) {
@@ -29,33 +70,32 @@ public class ClientSimple {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
-		
+		ClientSimple client = new ClientSimple();
 		try {
-			// Se connecte sur le serveur avec les informations recueillies depuis les arguments
-			socket = new Socket(hote, port);
-			// Récupère les flux d'entrée et de sortie du server
-			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			// Attends le message du serveur et l'affiche
-			String serverInput = in.readLine();
-			System.out.println("Message du server: " + serverInput);
-			// Envoie au server un message
-			System.out.println("Envoi du message: " + "Merci!");
-			out.println("Merci!");
-			// Attends que le server termine la connexion avant de terminer le programme
-			while (in.read() != -1) {
-
-			}
-			socket.close();
-			// La connexion s'est bien déroulée
-			return 0;
-		} catch (Exception e) {
-			System.err.println("Le client n'a pas pu se connecter.");
-			return -1;
+			client.connectToServer(hote, port);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-	}
-	
-	public static void main(String[] args) {
-		ClientSimple.startClient(args);
+		Thread threadClient = new Thread(client);
+		threadClient.start();
+		
+		Scanner scanner = new Scanner(System.in);
+		boolean isRunning = true;
+		while(isRunning) {
+			String input = scanner.nextLine();
+			System.out.println("Envoi message: " + input);
+			client.sendMessage(input);
+			if (input.equals("/quit")) {
+				System.out.println("Recu /quit message");
+				isRunning = false;
+			}
+		}
+		try {
+			client.disconnectFromServer();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		
 	}
 }

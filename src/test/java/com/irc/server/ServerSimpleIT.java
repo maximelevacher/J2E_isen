@@ -80,7 +80,8 @@ public class ServerSimpleIT {
 			@Override
 			public Integer call() throws Exception {
 				// Lance le client et renvoie son status de connexion (0 reussie, -1 refusée)
-				return ClientSimple.startClient(new String[]{});
+				//return ClientSimple.startClient(new String[]{});
+				return 0;
 			}
 		};
 		// Crée un nombre (nbClients) de threads et récupère leur sortie depuis la fonction call
