@@ -27,26 +27,33 @@ public class ClientSimple implements Runnable {
 		_out.println(message);
 	}
 	
-	public String receiveMessage() throws IOException {
-		return _in.readLine();
+	public String receiveMessage() {
+		String message = null;
+		try {
+			message = _in.readLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+			disconnectFromServer();
+		}
+		return message;
 	}
 	
-	public void disconnectFromServer() throws IOException {
+	public void disconnectFromServer() {
 		_isRunning = false;
 		_out.close();
-		_in.close();
-		_socket.close();
+		try {
+			_in.close();
+			_socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void run() {
 		while(_isRunning) {
 			String message = null;
-			try {
-				message = receiveMessage();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			message = receiveMessage();
 			System.out.println("Message reçu: " + message);
 		}
 	}
@@ -88,12 +95,6 @@ public class ClientSimple implements Runnable {
 				isRunning = false;
 			}
 		}
-		try {
-			client.disconnectFromServer();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		
+		client.disconnectFromServer();
 	}
 }
