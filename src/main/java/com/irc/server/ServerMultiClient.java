@@ -24,6 +24,7 @@ public class ServerMultiClient {
 			try {
 				ServerThread newClient = new ServerThread(serverSocket.accept(), this);
 				_tabServerThreads.addElement(newClient);
+				newClient.set_id(_tabServerThreads.indexOf(newClient));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -38,6 +39,15 @@ public class ServerMultiClient {
 
 	public void broadcastMessage(String message) {
 		for (ServerThread t : _tabServerThreads) {
+			t.sendMessage(message);
+		}
+	}
+
+	public void broadcastMessage(String message, int excludedClient) {
+		for (ServerThread t : _tabServerThreads) {
+			if (t.get_id() == excludedClient) {
+				continue;
+			}
 			t.sendMessage(message);
 		}
 	}

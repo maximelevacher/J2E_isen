@@ -9,8 +9,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
-import javax.swing.plaf.synth.SynthSpinnerUI;
-
 public class ClientSimple implements Runnable {
 	
 	private Socket _socket = null;
@@ -49,7 +47,7 @@ public class ClientSimple implements Runnable {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			System.out.println(message);
+			System.out.println("Message reçu: " + message);
 		}
 	}
 	

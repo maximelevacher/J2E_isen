@@ -13,6 +13,7 @@ public class ServerThread implements Runnable {
 	private PrintWriter _out;
 	private BufferedReader _in;
 	private String _nickName;
+	private int _id;
 	
 	public ServerThread(Socket s, ServerMultiClient serverMultiClient) {
 		_socket = s;
@@ -24,6 +25,14 @@ public class ServerThread implements Runnable {
 		_thread.start();
 	}
 	
+	public int get_id() {
+		return _id;
+	}
+
+	public void set_id(int _id) {
+		this._id = _id;
+	}
+
 	/**
 	 * Récupère les flux d'entrée et de sortie 
 	 */
@@ -85,7 +94,7 @@ public class ServerThread implements Runnable {
 				System.out.println("recu quit");
 			}
 			System.out.println("Envoi broadcast : " + clientInput);
-			_serverMultiClient.broadcastMessage(clientInput);
+			_serverMultiClient.broadcastMessage(clientInput, _id);
 		}
 		System.out.println("Quit server thread");
 		closeStreams();
