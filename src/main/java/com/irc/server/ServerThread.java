@@ -14,12 +14,17 @@ public class ServerThread implements Runnable {
 	private BufferedReader _in;
 	private String _nickName;
 	private int _id;
+	private volatile boolean _isRunning = true;
 	
-	public ServerThread(Socket s, ServerMultiClient serverMultiClient) {
+	public ServerThread(Socket s, ServerMultiClient serverMultiClient) throws IOException {
 		_socket = s;
 		_serverMultiClient = serverMultiClient;
 		
-		openStreams();
+		try {
+			openStreams();
+		} catch (IOException e) {
+			throw new IOException(e);
+		}
 		
 		_thread = new Thread(this);
 		_thread.start();
@@ -35,20 +40,18 @@ public class ServerThread implements Runnable {
 
 	/**
 	 * Récupère les flux d'entrée et de sortie 
+	 * @throws IOException
 	 */
-	public void openStreams() {
-		try {
-			_out = new PrintWriter(_socket.getOutputStream(), true);
-			_in = new BufferedReader(new InputStreamReader(_socket.getInputStream()));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void openStreams() throws IOException {
+		_out = new PrintWriter(_socket.getOutputStream(), true);
+		_in = new BufferedReader(new InputStreamReader(_socket.getInputStream()));
 	}
 	
 	/**
 	 * Ferme les flux et le socket
 	 */
 	public void closeStreams() {
+		_isRunning = false;
 		try {
 			_out.close();
 			_in.close();
@@ -68,6 +71,7 @@ public class ServerThread implements Runnable {
 			message = _in.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
+			closeStreams();
 		}
 		return message;
 	}
@@ -84,20 +88,20 @@ public class ServerThread implements Runnable {
 	public void run() {
 		System.out.println("Envoi message");
 		sendMessage("Bienvenue sur le server!");
-		boolean bQuit = false;
 		_serverMultiClient.broadcastMessage("Salut a tous!");
-		while (!bQuit) {
+		while (_isRunning) {
 			String clientInput = receiveMessage();
 			System.out.println("Message du client: " + clientInput);
 			if (clientInput.equals("/quit")) {
-				bQuit = true;
+				_isRunning = false;
 				System.out.println("recu quit");
 			}
-			System.out.println("Envoi broadcast : " + clientInput);
-			_serverMultiClient.broadcastMessage(clientInput, _id);
+			if (clientInput != null) {
+				System.out.println("Envoi broadcast : " + clientInput);
+				_serverMultiClient.broadcastMessage(clientInput, _id);
+			}
 		}
 		System.out.println("Quit server thread");
 		closeStreams();
-		return;
 	}
 }

@@ -27,14 +27,9 @@ public class ClientSimple implements Runnable {
 		_out.println(message);
 	}
 	
-	public String receiveMessage() {
+	public String receiveMessage() throws IOException {
 		String message = null;
-		try {
-			message = _in.readLine();
-		} catch (IOException e) {
-			e.printStackTrace();
-			disconnectFromServer();
-		}
+		message = _in.readLine();
 		return message;
 	}
 	
@@ -53,8 +48,13 @@ public class ClientSimple implements Runnable {
 	public void run() {
 		while(_isRunning) {
 			String message = null;
-			message = receiveMessage();
-			System.out.println("Message reçu: " + message);
+			try {
+				message = receiveMessage();
+				System.out.println("Message reçu: " + message);
+			} catch (IOException e) {
+				disconnectFromServer();
+				e.printStackTrace();
+			}
 		}
 	}
 	

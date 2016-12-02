@@ -16,7 +16,7 @@ public class ServerMultiClient {
 		try {
 			serverSocket = new ServerSocket(defaultPort);
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 		System.out.println("Server started!");
 		while (isRunning) {
@@ -25,10 +25,10 @@ public class ServerMultiClient {
 				ServerThread newClient = new ServerThread(serverSocket.accept(), this);
 				_tabServerThreads.addElement(newClient);
 				newClient.set_id(_tabServerThreads.indexOf(newClient));
+				System.out.println("Server accepted a client.");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			System.out.println("Server accepted a client.");
 		}
 		try {
 			serverSocket.close();
