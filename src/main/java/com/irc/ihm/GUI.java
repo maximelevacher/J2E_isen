@@ -31,7 +31,7 @@ import javax.swing.SwingConstants;
 public class GUI extends JFrame implements MouseListener, ChangeListener {
 	JTabbedPane messageArea = null;
 
-	public G() {
+	public GUI() {
 		setTitle("ChatDent");
 		setVisible(true);
 		setSize(900, 700);
@@ -62,7 +62,7 @@ public class GUI extends JFrame implements MouseListener, ChangeListener {
 	}
 
 	public static void main(String[] args) {
-		new G();
+		new GUI();
 
 	}
 
