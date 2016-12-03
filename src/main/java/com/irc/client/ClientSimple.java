@@ -9,7 +9,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -23,7 +22,7 @@ public class ClientSimple implements Runnable {
 	private BufferedReader _in = null;
 	public final static int DEFAULT_PORT = 45612;
 	private volatile boolean _isRunning = true;
-	
+
 	public void connectToServer(InetAddress hote, int port) throws IOException {
 		_socket = new Socket(hote, port);
 		_out = new PrintWriter(_socket.getOutputStream(), true);
@@ -31,6 +30,10 @@ public class ClientSimple implements Runnable {
 		logger.info("Connecté au serveur: " + hote.toString() + ":" + port);
 	}
 	
+	public void setNickName(String nickname) {
+		sendMessage("%nickname " + nickname);
+	}
+
 	public void sendMessage(String message) {
 		_out.println(message);
 		logger.info("Envoi du message: " + message);
@@ -54,6 +57,10 @@ public class ClientSimple implements Runnable {
 		}
 	}
 
+	public boolean isRunning() {
+		return _isRunning;
+	}
+
 	@Override
 	public void run() {
 		logger.info("Lancement du thread receiveMessage.");
@@ -61,6 +68,9 @@ public class ClientSimple implements Runnable {
 			String message = null;
 			try {
 				message = receiveMessage();
+				if (message == null) {
+					throw new IOException("Probleme lors de la réception d'un message non reçu.");
+				}
 				logger.info("Message reçu: " + message);
 			} catch (IOException e) {
 				logger.error("Thread receiveMessage ne reçoit pas.", e);
@@ -92,19 +102,24 @@ public class ClientSimple implements Runnable {
 			client.connectToServer(hote, port);
 		} catch (IOException e) {
 			logger.error("Impossible de se connecter au serveur:" + hote.toString() + ":" + port, e);
+			throw new RuntimeException();
 		}
 		Thread threadClient = new Thread(client);
 		threadClient.start();
 		
 		Scanner scanner = new Scanner(System.in);
-		boolean isRunning = true;
-		while(isRunning) {
+
+		System.out.println("Entrez votre pseudo:");
+		client.setNickName(scanner.nextLine());
+
+		while(client.isRunning()) {
 			String input = scanner.nextLine();
-			client.sendMessage(input);
 			if (input.equals("/quit")) {
 				logger.info("Commande entrée: " + "/quit");
-				isRunning = false;
+				client.disconnectFromServer();
+				break;
 			}
+			client.sendMessage(input);
 		}
 		client.disconnectFromServer();
 	}

@@ -63,7 +63,8 @@ public class ServerThread implements Runnable {
 			_out.close();
 			_in.close();
 			_socket.close();
-			logger.info("Ferme les streams du client n°" + get_id());
+			_serverMultiClient.deleteFromServerThreadList(this);
+			logger.info("Ferme les streams du client " + getNickName());
 		} catch (IOException e) {
 			logger.error("Problème lors de la fermeture des streams.");
 		}
@@ -71,7 +72,7 @@ public class ServerThread implements Runnable {
 	
 	public void sendMessage(String message) {
 		_out.println(message);
-		logger.info(get_id() + "| Envoi du message: " + message);
+		logger.info(getNickName() + "| Envoi du message: " + message);
 	}
 
 	public String receiveMessage() {
@@ -82,6 +83,10 @@ public class ServerThread implements Runnable {
 				throw new IOException("Fin de stream.");
 			}
 			logger.info("Message reçu: " + message);
+			if (message.startsWith("%nickname")) {
+				setNickName(message.split(" ")[1]);
+				message = null;
+			}
 		} catch (IOException e) {
 			logger.error("Impossible de recevoir un message.", e);
 			closeStreams();
@@ -101,15 +106,14 @@ public class ServerThread implements Runnable {
 	public void run() {
 		logger.info("Envoi du message de bienvenue:" + " Bienvenue sur le serveur!");
 		sendMessage("Bienvenue sur le serveur!");
-		_serverMultiClient.broadcastMessage("Salut a tous!");
 		while (_isRunning) {
 			String clientInput = receiveMessage();
 			if (clientInput != null) {
 				logger.info("Envoi d'un broadcast à tous les autres: " + clientInput);
-				_serverMultiClient.broadcastMessage(clientInput, _id);
+				_serverMultiClient.broadcastMessage(clientInput, this);
 			}
 		}
-		logger.info("Fermeture du thread serveur du client n°" + get_id());
+		logger.info("Fermeture du thread serveur du client " + getNickName());
 		closeStreams();
 	}
 }

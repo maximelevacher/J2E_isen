@@ -7,11 +7,11 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import com.irc.client.ClientSimple;
-
 public class ServerMultiClient {
 	static final Logger logger = Logger.getLogger(ServerMultiClient.class);
 	static final String logConfigPath = "conf/log4j.properties";
+
+	static final int CONNECTIONS_LIMIT = 5;
 
 	private ServerSocket serverSocket = null;
 	private int defaultPort = 45612;
@@ -31,7 +31,9 @@ public class ServerMultiClient {
 			try {
 				ServerThread newClient = new ServerThread(serverSocket.accept(), this);
 				_tabServerThreads.addElement(newClient);
-				newClient.set_id(_tabServerThreads.indexOf(newClient));
+				if (_tabServerThreads.size() > CONNECTIONS_LIMIT) {
+					newClient.closeStreams();
+				}
 				logger.info("Client connecté au serveur.");
 			} catch (IOException e) {
 				logger.error("Un client n'a pas réussi à se connecter.", e);
@@ -51,14 +53,18 @@ public class ServerMultiClient {
 		logger.info("Envoi d'un broadcast: " + message);
 	}
 
-	public void broadcastMessage(String message, int excludedClient) {
+	public void broadcastMessage(String message, ServerThread s) {
 		for (ServerThread t : _tabServerThreads) {
-			if (t.get_id() == excludedClient) {
+			if (t.equals(s)) {
 				continue;
 			}
 			t.sendMessage(message);
 		}
-		logger.info("Envoi d'un broadcast sauf à " + excludedClient + ": " + message);
+		logger.info("Envoi d'un broadcast sauf à " + s.getNickName() + ": " + message);
+	}
+
+	public void deleteFromServerThreadList(ServerThread s) {
+		_tabServerThreads.remove(s);
 	}
 
 	public static void main(String[] args) {
