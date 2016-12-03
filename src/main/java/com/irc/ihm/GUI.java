@@ -20,6 +20,8 @@ import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JMenu;
 import java.awt.Panel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -28,14 +30,15 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.SwingConstants;
 
-public class GUI extends JFrame implements MouseListener, ChangeListener {
+public class GUI extends JFrame implements MouseListener, ChangeListener, ActionListener {
 	JTabbedPane messageArea = null;
-
+	JTextArea textAreaSendMessage= null;
+	JButton sendButton = null;
 	public GUI() {
 		setTitle("ChatDent");
 		setVisible(true);
 		setSize(900, 700);
-
+		this.addMouseListener(this);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		// on initialise la bar de menu
 		menuBar();
@@ -79,13 +82,15 @@ public class GUI extends JFrame implements MouseListener, ChangeListener {
 	protected JPanel sendMessage() {
 		Border border = BorderFactory.createLineBorder(Color.BLACK);
 		JPanel panel_2 = new JPanel();
-		JTextArea textArea_1 = new JTextArea();
-		panel_2.add(textArea_1);
-		textArea_1.setColumns(50);
-		textArea_1.setRows(5);
-		textArea_1.setBorder(border);
+		textAreaSendMessage = new JTextArea();
+		panel_2.add(textAreaSendMessage);
+		textAreaSendMessage.setColumns(50);
+		textAreaSendMessage.setRows(5);
+		textAreaSendMessage.setBorder(border);
 
-		JButton sendButton = new JButton("Send");
+		sendButton = new JButton("Send");
+		sendButton.setName("send");
+		sendButton.addMouseListener(sendButtonListener);
 		panel_2.add(sendButton);
 		sendButton.setVerticalAlignment(SwingConstants.TOP);
 		return panel_2;
@@ -123,7 +128,7 @@ public class GUI extends JFrame implements MouseListener, ChangeListener {
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
-
+		 System.out.println("You clicked the button, using an ActionListener");
 	}
 
 	@Override
@@ -149,7 +154,16 @@ public class GUI extends JFrame implements MouseListener, ChangeListener {
 		// TODO Auto-generated method stub
 
 	}
-
+	MouseListener sendButtonListener = new MouseAdapter() {
+		public void mouseClicked(MouseEvent mouseEvent) {
+			if(textAreaSendMessage.getText().length()!=0){
+				System.out.println(textAreaSendMessage.getText());
+				textAreaSendMessage.setText("");
+			}else{
+				
+			}
+		}
+	};
 	MouseListener mouseListener = new MouseAdapter() {
 		public void mouseClicked(MouseEvent mouseEvent) {
 			JList theList = (JList) mouseEvent.getSource();
@@ -171,6 +185,12 @@ public class GUI extends JFrame implements MouseListener, ChangeListener {
 		//JOptionPane.showMessageDialog(null, "Selected Index: " + selectedIndex);
 		
 
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
