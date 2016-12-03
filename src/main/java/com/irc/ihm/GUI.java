@@ -12,6 +12,8 @@ import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.irc.controller.Controller;
+
 import java.awt.GridLayout;
 import java.awt.BorderLayout;
 import javax.swing.JSplitPane;
@@ -31,12 +33,13 @@ import javax.swing.DefaultListModel;
 import javax.swing.SwingConstants;
 
 public class GUI extends JFrame implements MouseListener, ChangeListener, ActionListener {
+	private Controller controller;
 	JTabbedPane messageArea = null;
+	JTextArea textAreaReceiveMessage = null;
 	JTextArea textAreaSendMessage= null;
 	JButton sendButton = null;
 	public GUI() {
 		setTitle("ChatDent");
-		setVisible(true);
 		setSize(900, 700);
 		this.addMouseListener(this);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -61,12 +64,15 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		getContentPane().add(espaceSendMessage, BorderLayout.SOUTH);
 		espaceSendMessage.setLayout(new BorderLayout(0, 0));
 		espaceSendMessage.add(sendMessage(), BorderLayout.SOUTH);
-
+		setVisible(true);
 	}
 
 	public static void main(String[] args) {
 		new GUI();
+	}
 
+	public void addListenener(Controller c) {
+		controller = c;
 	}
 
 	protected DefaultListModel<String> updateConnected() {
@@ -120,9 +126,9 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 	}
 
 	protected JTextArea addMessageList() {
-		JTextArea textArea = new JTextArea();
-		textArea.setText("");
-		return textArea;
+		textAreaReceiveMessage = new JTextArea();
+		textAreaReceiveMessage.setText("");
+		return textAreaReceiveMessage;
 	}
 
 	@Override
@@ -159,6 +165,7 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		public void mouseClicked(MouseEvent mouseEvent) {
 			if(textAreaSendMessage.getText().length()!=0){
 				System.out.println(textAreaSendMessage.getText());
+				controller.onClickOnSendMessage(textAreaSendMessage.getText());
 				textAreaSendMessage.setText("");
 			}else{
 				
@@ -186,6 +193,10 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		//JOptionPane.showMessageDialog(null, "Selected Index: " + selectedIndex);
 		
 
+	}
+
+	public void appendMessageToArea(String message) {
+		 textAreaReceiveMessage.setText(textAreaReceiveMessage.getText() + message + System.lineSeparator());
 	}
 
 	@Override

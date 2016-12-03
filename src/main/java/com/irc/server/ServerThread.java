@@ -110,7 +110,7 @@ public class ServerThread implements Runnable {
 			String clientInput = receiveMessage();
 			if (clientInput != null) {
 				logger.info("Envoi d'un broadcast à tous les autres: " + clientInput);
-				_serverMultiClient.broadcastMessage(clientInput, this);
+				_serverMultiClient.broadcastMessage(clientInput);
 			}
 		}
 		logger.info("Fermeture du thread serveur du client " + getNickName());
