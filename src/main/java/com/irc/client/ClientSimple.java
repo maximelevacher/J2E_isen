@@ -9,8 +9,15 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+
 public class ClientSimple implements Runnable {
 	
+	static final Logger logger = Logger.getLogger(ClientSimple.class);
+	static final String logConfigPath = "conf/log4j.properties";
+
 	private Socket _socket = null;
 	private PrintWriter _out = null;
 	private BufferedReader _in = null;
@@ -21,10 +28,12 @@ public class ClientSimple implements Runnable {
 		_socket = new Socket(hote, port);
 		_out = new PrintWriter(_socket.getOutputStream(), true);
 		_in = new BufferedReader(new InputStreamReader(_socket.getInputStream()));
+		logger.info("Connecté au serveur: " + hote.toString() + ":" + port);
 	}
 	
 	public void sendMessage(String message) {
 		_out.println(message);
+		logger.info("Envoi du message: " + message);
 	}
 	
 	public String receiveMessage() throws IOException {
@@ -39,26 +48,29 @@ public class ClientSimple implements Runnable {
 		try {
 			_in.close();
 			_socket.close();
+			logger.info("Déconnexion du serveur.");
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error("Erreur lors de la déconnexion.", e);
 		}
 	}
 
 	@Override
 	public void run() {
+		logger.info("Lancement du thread receiveMessage.");
 		while(_isRunning) {
 			String message = null;
 			try {
 				message = receiveMessage();
-				System.out.println("Message reçu: " + message);
+				logger.info("Message reçu: " + message);
 			} catch (IOException e) {
+				logger.error("Thread receiveMessage ne reçoit pas.", e);
 				disconnectFromServer();
-				e.printStackTrace();
 			}
 		}
 	}
 	
 	public static void main(String[] args) {
+		PropertyConfigurator.configure(logConfigPath);
 		InetAddress hote = null;
 		int port = ClientSimple.DEFAULT_PORT;
 		// Récupère les informations de connexion depuis les arguments du programme
@@ -73,13 +85,13 @@ public class ClientSimple implements Runnable {
 				port = Integer.parseInt(args[1]);
 			}
 		} catch (UnknownHostException e) {
-			e.printStackTrace();
+			logger.error("Erreur argument hote.", e);
 		}
 		ClientSimple client = new ClientSimple();
 		try {
 			client.connectToServer(hote, port);
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error("Impossible de se connecter au serveur:" + hote.toString() + ":" + port, e);
 		}
 		Thread threadClient = new Thread(client);
 		threadClient.start();
@@ -88,10 +100,9 @@ public class ClientSimple implements Runnable {
 		boolean isRunning = true;
 		while(isRunning) {
 			String input = scanner.nextLine();
-			System.out.println("Envoi message: " + input);
 			client.sendMessage(input);
 			if (input.equals("/quit")) {
-				System.out.println("Recu /quit message");
+				logger.info("Commande entrée: " + "/quit");
 				isRunning = false;
 			}
 		}

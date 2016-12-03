@@ -1,12 +1,18 @@
 package com.irc.server;
 
 import java.net.Socket;
+
+import org.apache.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
 public class ServerThread implements Runnable {
+	static final Logger logger = Logger.getLogger(ServerThread.class);
+	static final String logConfigPath = "conf/log4j.properties";
+
 	private ServerMultiClient _serverMultiClient;
 	private Thread _thread;
 	private Socket _socket;
@@ -45,6 +51,7 @@ public class ServerThread implements Runnable {
 	public void openStreams() throws IOException {
 		_out = new PrintWriter(_socket.getOutputStream(), true);
 		_in = new BufferedReader(new InputStreamReader(_socket.getInputStream()));
+		logger.info("Ouvre les streams du client qui vient de se connecter.");
 	}
 	
 	/**
@@ -56,21 +63,27 @@ public class ServerThread implements Runnable {
 			_out.close();
 			_in.close();
 			_socket.close();
+			logger.info("Ferme les streams du client n°" + get_id());
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error("Problème lors de la fermeture des streams.");
 		}
 	}
 	
 	public void sendMessage(String message) {
 		_out.println(message);
+		logger.info(get_id() + "| Envoi du message: " + message);
 	}
 
 	public String receiveMessage() {
 		String message = null;
 		try {
 			message = _in.readLine();
+			if (message == null) {
+				throw new IOException("Fin de stream.");
+			}
+			logger.info("Message reçu: " + message);
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error("Impossible de recevoir un message.", e);
 			closeStreams();
 		}
 		return message;
@@ -86,22 +99,17 @@ public class ServerThread implements Runnable {
 
 	@Override
 	public void run() {
-		System.out.println("Envoi message");
-		sendMessage("Bienvenue sur le server!");
+		logger.info("Envoi du message de bienvenue:" + " Bienvenue sur le serveur!");
+		sendMessage("Bienvenue sur le serveur!");
 		_serverMultiClient.broadcastMessage("Salut a tous!");
 		while (_isRunning) {
 			String clientInput = receiveMessage();
-			System.out.println("Message du client: " + clientInput);
-			if (clientInput.equals("/quit")) {
-				_isRunning = false;
-				System.out.println("recu quit");
-			}
 			if (clientInput != null) {
-				System.out.println("Envoi broadcast : " + clientInput);
+				logger.info("Envoi d'un broadcast à tous les autres: " + clientInput);
 				_serverMultiClient.broadcastMessage(clientInput, _id);
 			}
 		}
-		System.out.println("Quit server thread");
+		logger.info("Fermeture du thread serveur du client n°" + get_id());
 		closeStreams();
 	}
 }
