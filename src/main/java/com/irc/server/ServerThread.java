@@ -9,7 +9,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
+/**
+ * Cette classe gère un client connecté sur le serveur
+ * @author Zak
+ *
+ */
 public class ServerThread implements Runnable {
+	/**
+	 * Permet de logger des messages suivant le fichier de configuration log4j.properties
+	 */
 	static final Logger logger = Logger.getLogger(ServerThread.class);
 	static final String logConfigPath = "conf/log4j.properties";
 
@@ -22,6 +30,12 @@ public class ServerThread implements Runnable {
 	private int _id;
 	private volatile boolean _isRunning = true;
 	
+	/**
+	 * Récupère le socket d'un client venant de se connecter et lance son thread
+	 * @param s Le socket récupéré
+	 * @param serverMultiClient Le serveur de connexion
+	 * @throws IOException En cas d'impossibilité d'ouverture des flux de communication
+	 */
 	public ServerThread(Socket s, ServerMultiClient serverMultiClient) throws IOException {
 		_socket = s;
 		_serverMultiClient = serverMultiClient;
@@ -45,8 +59,8 @@ public class ServerThread implements Runnable {
 	}
 
 	/**
-	 * Récupère les flux d'entrée et de sortie 
-	 * @throws IOException
+	 * Récupère les flux d'entrée et de sortie du socket.
+	 * @throws IOException S'il est impossible de récuperer les flux
 	 */
 	public void openStreams() throws IOException {
 		_out = new PrintWriter(_socket.getOutputStream(), true);
@@ -55,7 +69,7 @@ public class ServerThread implements Runnable {
 	}
 	
 	/**
-	 * Ferme les flux et le socket
+	 * Ferme les flux de communication et le socket du client
 	 */
 	public void closeStreams() {
 		_isRunning = false;
@@ -70,11 +84,19 @@ public class ServerThread implements Runnable {
 		}
 	}
 	
+	/**
+	 * Envoie un message vers le client connecté
+	 * @param message
+	 */
 	public void sendMessage(String message) {
 		_out.println(message);
 		logger.info(getNickName() + "| Envoi du message: " + message);
 	}
 
+	/**
+	 * Recoit un message depuis le client connecté
+	 * @return Un string contenant le message se terminant pas un \r ou \n
+	 */
 	public String receiveMessage() {
 		String message = null;
 		try {
@@ -102,6 +124,9 @@ public class ServerThread implements Runnable {
 		this._nickName = nickName;
 	}
 
+	/**
+	 * Le thread analysant et traitant les messages envoyés depuis le client
+	 */
 	@Override
 	public void run() {
 		logger.info("Envoi du message de bienvenue:" + " Bienvenue sur le serveur!");

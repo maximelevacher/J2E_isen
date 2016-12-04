@@ -7,21 +7,36 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+/**
+ * Cette classe gère le serveur et les opérations concernant tous les clients connectés
+ * @author Zak
+ *
+ */
 public class ServerMultiClient {
+	/**
+	 * Permet de logger des messages suivant le fichier de configuration log4j.properties
+	 */
 	static final Logger logger = Logger.getLogger(ServerMultiClient.class);
 	static final String logConfigPath = "conf/log4j.properties";
 
 	static final int CONNECTIONS_LIMIT = 5;
+	static final int DEFAULT_PORT = 45612;
 
 	private ServerSocket serverSocket = null;
-	private int defaultPort = 45612;
 	private boolean isRunning = true;
+
+	/**
+	 * Contient les clients connectés au serveur
+	 */
 	private Vector<ServerThread> _tabServerThreads = new Vector<ServerThread>();
 
+	/**
+	 * Lance le serveur et commence à accepter les connexions vers celui-ci
+	 */
 	public ServerMultiClient() {
-		logger.info("Lance le serveur sur le port: " + defaultPort);
+		logger.info("Lance le serveur sur le port: " + DEFAULT_PORT);
 		try {
-			serverSocket = new ServerSocket(defaultPort);
+			serverSocket = new ServerSocket(DEFAULT_PORT);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -46,6 +61,10 @@ public class ServerMultiClient {
 		}
 	}
 
+	/**
+	 * Envoie un message à tous les clients connectés
+	 * @param message Le message à envoyer
+	 */
 	public void broadcastMessage(String message) {
 		for (ServerThread t : _tabServerThreads) {
 			t.sendMessage(message);
@@ -53,6 +72,11 @@ public class ServerMultiClient {
 		logger.info("Envoi d'un broadcast: " + message);
 	}
 
+	/**
+	 * Envoie un message à tous les clients connectés sauf celui passé en paramètre
+	 * @param message Le message à envoyer
+	 * @param s Le client à ignorer
+	 */
 	public void broadcastMessage(String message, ServerThread s) {
 		for (ServerThread t : _tabServerThreads) {
 			if (t.equals(s)) {
@@ -63,6 +87,10 @@ public class ServerMultiClient {
 		logger.info("Envoi d'un broadcast sauf à " + s.getNickName() + ": " + message);
 	}
 
+	/**
+	 * Supprime un client de la liste des clients connectés
+	 * @param s Le client à supprimer
+	 */
 	public void deleteFromServerThreadList(ServerThread s) {
 		_tabServerThreads.remove(s);
 	}

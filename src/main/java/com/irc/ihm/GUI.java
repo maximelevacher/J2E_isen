@@ -32,6 +32,11 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.SwingConstants;
 
+/**
+ * Cette classe implémente une interface graphique pour un client de chat
+ * @author Maxime L.
+ *
+ */
 public class GUI extends JFrame implements MouseListener, ChangeListener, ActionListener {
 	private Controller controller;
 	JTabbedPane messageArea = null;
