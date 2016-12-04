@@ -7,6 +7,11 @@ import java.net.UnknownHostException;
 import com.irc.client.ClientSimple;
 import com.irc.ihm.GUI;
 
+/**
+ * Cette classe fait le lien entre l'IHM et le client
+ * @author Zak
+ *
+ */
 public class Controller {
 	ClientSimple client = null;
 	GUI view = null;
@@ -17,7 +22,7 @@ public class Controller {
 		view = v;
 		
 		try {
-			c.connectToServer(InetAddress.getLocalHost(), ClientSimple.DEFAULT_PORT);
+			client.connectToServer(InetAddress.getLocalHost(), ClientSimple.DEFAULT_PORT);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -28,11 +33,11 @@ public class Controller {
 			public void run() {
 				while(_isRunning) {
 					try {
-						String message = c.receiveMessage();
-						v.appendMessageToArea(message);
+						String message = client.receiveMessage();
+						view.appendMessageToArea(message);
 					} catch (IOException e) {
 						e.printStackTrace();
-						c.disconnectFromServer();
+						client.disconnectFromServer();
 					}
 				}
 			}
