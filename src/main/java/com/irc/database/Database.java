@@ -80,7 +80,6 @@ public class Database {
 	 *            Message to save in database
 	 * @param typeMessage
 	 *            Type de message à sauvegarder
-	 * @return ArrayList of all messages between this 2 person
 	 * @throws SQLException
 	 */
 	public void insertMessage() throws SQLException {
@@ -100,10 +99,6 @@ public class Database {
 	 *            an id of person who send the message
 	 * @param idEmeter
 	 *            an id of person who recive the message
-	 * @param message
-	 *            Message to save in database
-	 * @param typeMessage
-	 *            Type de message à sauvegarder
 	 * @return ArrayList of all messages between this 2 person
 	 * @throws SQLException
 	 */
