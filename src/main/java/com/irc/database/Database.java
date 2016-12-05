@@ -82,11 +82,11 @@ public class Database {
 	 *            Type de message à sauvegarder
 	 * @throws SQLException
 	 */
-	public void insertMessage() throws SQLException {
+	public void insertMessage(int idSender,int idEmeter,String message,String type) throws SQLException {
 	      stmt = (Statement) conn.createStatement();
 	      
-	      String sql = "INSERT INTO message(ME_sender,ME_emeteur,ME_text,ME_type " +
-	                   "VALUES (1, 1, 'Test', 'string')";
+	      String sql = "INSERT INTO message(ME_sender,ME_emeteur,ME_text,ME_type)" +
+	                   "VALUES ("+idSender+", "+idEmeter+", "+message+", "+type+")";
 	      stmt.executeUpdate(sql);
 	}
 	
