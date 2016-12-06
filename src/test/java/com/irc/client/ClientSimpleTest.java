@@ -39,7 +39,6 @@ public class ClientSimpleTest {
 				_in = new BufferedReader(new InputStreamReader(_s.getInputStream()));
 				_out = new PrintWriter(_s.getOutputStream(), true);
 			} catch (IOException e) {
-				e.printStackTrace();
 			}
 
 		}
@@ -49,6 +48,9 @@ public class ClientSimpleTest {
 			while(true) {
 				try {
 					String message = _in.readLine();
+					if (message == null) {
+						throw new IOException("Le client est déconnecté");
+					}
 					messageRecus.addElement(message);
 					if (message.startsWith("%nickname")) {
 						String nickname = message.split(" ")[1];
@@ -61,7 +63,6 @@ public class ClientSimpleTest {
 						_s.close();
 					}
 				} catch (IOException e) {
-					//e.printStackTrace();
 				}
 			}
 		}
@@ -98,7 +99,6 @@ public class ClientSimpleTest {
 						tsc.start();
 						connectedClients.addElement(sc);
 					} catch (IOException e) {
-						//e.printStackTrace();
 					}
 				}
 			}
@@ -114,7 +114,6 @@ public class ClientSimpleTest {
 			ss.close();
 			thread.join();
 		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -125,7 +124,6 @@ public class ClientSimpleTest {
 			client.connectToServer(InetAddress.getLocalHost(), 55555);
 			client.sendMessage("Test");
 		} catch (IOException e) {
-			e.printStackTrace();
 			fail("La connexion n'a pas réussie.");
 		}
 	}
@@ -188,7 +186,6 @@ public class ClientSimpleTest {
 			try {
 				Thread.sleep(10);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
 			}
 			assertEquals(listOfMessageToSend, connectedClients.get(0).messageRecus);
 		} catch (IOException e) {
