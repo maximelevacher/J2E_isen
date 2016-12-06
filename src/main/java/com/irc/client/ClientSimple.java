@@ -76,15 +76,12 @@ public class ClientSimple {
 	
 	/**
 	 * Ferme les canaux de communication et se deconnecte du serveur.
+	 * @throws IOException Si le client n'arrive pas à se deconnecter
 	 */
-	public void disconnectFromServer() {
+	public void disconnectFromServer() throws IOException {
 		_out.close();
-		try {
-			_in.close();
-			_socket.close();
-			logger.info("Déconnexion du serveur.");
-		} catch (IOException e) {
-			logger.error("Erreur lors de la déconnexion.", e);
-		}
+		_in.close();
+		_socket.close();
+		logger.info("Déconnexion du serveur.");
 	}
 }

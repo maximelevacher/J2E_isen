@@ -37,7 +37,11 @@ public class Controller {
 						view.appendMessageToArea(message);
 					} catch (IOException e) {
 						e.printStackTrace();
-						client.disconnectFromServer();
+						try {
+							client.disconnectFromServer();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
 					}
 				}
 			}

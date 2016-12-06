@@ -156,7 +156,11 @@ public class ClientSimpleTest {
 			client.connectToServer(InetAddress.getLocalHost(), 55555);
 		} catch (IOException e) {
 		}
-		client.disconnectFromServer();
+		try {
+			client.disconnectFromServer();
+		} catch (IOException e1) {
+			fail("Impossible de se deconnecter.");
+		}
 		try {
 			client.receiveMessage();
 			fail("Le client est resté connecté.");
