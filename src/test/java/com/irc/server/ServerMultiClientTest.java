@@ -51,7 +51,7 @@ public class ServerMultiClientTest {
 	@Test
 	public void testStartServerFail() {
 		// On lance un serveur qui fonctionne dans un thread
-		ServerMultiClient server = new ServerMultiClient();
+		final ServerMultiClient server = new ServerMultiClient();
 		startServer(server);
 
 		// Puis on lance le serveur qui va rater son lancement
@@ -75,7 +75,7 @@ public class ServerMultiClientTest {
 	@Test
 	public void testConnect1Client() {
 		// On lance le serveur
-		ServerMultiClient server = new ServerMultiClient();
+		final ServerMultiClient server = new ServerMultiClient();
 		startServer(server);
 
 		try {
@@ -93,7 +93,7 @@ public class ServerMultiClientTest {
 	@Test
 	public void testConnectConnectionsLimitClients() {
 		// On lance le serveur
-		ServerMultiClient server = new ServerMultiClient();
+		final ServerMultiClient server = new ServerMultiClient();
 		startServer(server);
 
 		try {
