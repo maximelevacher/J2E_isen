@@ -131,7 +131,7 @@ public class ServerMultiClientTest {
 	 * Lance un serveur déjà instancié et attends qu'il soit bien lancé.
 	 * @param server Le serveur à lancer et déjà instancié
 	 */
-	private void startServer(ServerMultiClient server) {
+	private void startServer(final ServerMultiClient server) {
 		Thread t = new Thread() {
 			public void run() {
 				server.startServer();
