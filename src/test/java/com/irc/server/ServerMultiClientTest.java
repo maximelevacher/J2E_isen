@@ -26,7 +26,7 @@ public class ServerMultiClientTest {
 	@Test
 	public void testStartAndShutdownServer() {
 		// On lance le serveur et un service de recupération des exceptions
-		ServerMultiClient server = new ServerMultiClient();
+		final ServerMultiClient server = new ServerMultiClient();
 		ExecutorService es = Executors.newSingleThreadExecutor();
 		Future<?> future = es.submit(new Runnable() {
 			public void run() {
@@ -111,7 +111,7 @@ public class ServerMultiClientTest {
 	@Test
 	public void testConnectOverConnectionsLimit() {
 		// On lance le serveur
-		ServerMultiClient server = new ServerMultiClient();
+		final ServerMultiClient server = new ServerMultiClient();
 		startServer(server);
 
 		try {
