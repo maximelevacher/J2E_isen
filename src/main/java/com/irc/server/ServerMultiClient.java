@@ -23,7 +23,7 @@ public class ServerMultiClient {
 	static final int DEFAULT_PORT = 45612;
 
 	private ServerSocket serverSocket = null;
-	private boolean isRunning = true;
+	volatile private boolean isRunning = false;
 
 	/**
 	 * Contient les clients connectés au serveur
@@ -33,14 +33,16 @@ public class ServerMultiClient {
 	/**
 	 * Lance le serveur et commence à accepter les connexions vers celui-ci
 	 */
-	public ServerMultiClient() {
+	public void startServer() {
 		logger.info("Lance le serveur sur le port: " + DEFAULT_PORT);
 		try {
 			serverSocket = new ServerSocket(DEFAULT_PORT);
+			serverSocket.setReuseAddress(true);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 		logger.info("Serveur lancé.");
+		isRunning = true;
 		while (isRunning) {
 			logger.info("En attente de connexion de la part d'un client...");
 			try {
@@ -95,8 +97,22 @@ public class ServerMultiClient {
 		_tabServerThreads.remove(s);
 	}
 
+	public void shutdownServer() throws IOException {
+		isRunning = false;
+		serverSocket.close();
+	}
+
+	public int getNumberOfConnectedClients() {
+		return _tabServerThreads.size();
+	}
+
+	public boolean isRunning() {
+		return isRunning;
+	}
+
 	public static void main(String[] args) {
 		PropertyConfigurator.configure(logConfigPath);
 		ServerMultiClient server = new ServerMultiClient();
+		server.startServer();
 	}
 }
