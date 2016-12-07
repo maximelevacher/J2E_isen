@@ -2,6 +2,7 @@ package com.irc.server;
 
 import static org.junit.Assert.*;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -80,7 +81,14 @@ public class ServerSimpleIT {
 			@Override
 			public Integer call() throws Exception {
 				// Lance le client et renvoie son status de connexion (0 reussie, -1 refusée)
-				//return ClientSimple.startClient(new String[]{});
+				ClientSimple client = new ClientSimple();
+				client.connectToServer(InetAddress.getLocalHost(), ClientSimple.DEFAULT_PORT);
+				try {
+					client.receiveMessage();
+					client.sendMessage("test");
+				} catch (Exception e) {
+					return -1;
+				}
 				return 0;
 			}
 		};
