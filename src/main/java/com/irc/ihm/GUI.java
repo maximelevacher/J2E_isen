@@ -13,6 +13,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import com.irc.controller.Controller;
+import com.irc.database.MessageDAO;
+import com.irc.metier.Message;
 
 import java.awt.GridLayout;
 import java.awt.BorderLayout;
@@ -202,6 +204,9 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 
 	public void appendMessageToArea(String message) {
 		 textAreaReceiveMessage.setText(textAreaReceiveMessage.getText() + message + System.lineSeparator());
+		MessageDAO messageDAO = new MessageDAO();
+		Message message1 = new Message();
+		messageDAO.create(message1);
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.Date;
 
 import com.irc.metier.Message;
+import com.mysql.jdbc.Statement;
 
 public class MessageDAO extends DAO<Message>{
 
@@ -32,7 +33,22 @@ public class MessageDAO extends DAO<Message>{
 	}
 	@Override
 	public Message create(Message obj) {
-		// TODO Auto-generated method stub
+		 Statement stmt = null;
+		try {
+			stmt = (Statement) connect.createStatement();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	      
+	      String sql = "INSERT INTO message(ME_sender,ME_emeteur,ME_text,ME_type)" +
+	                   "VALUES ('"+obj.getSender().getId()+"', "+obj.getEmmetter().getId()+",'"+obj.getMessage()+"','text')";
+	      try {
+			stmt.executeUpdate(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return null;
 	}
 	@Override

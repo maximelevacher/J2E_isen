@@ -14,7 +14,7 @@ public class Database {
 	Statement stmt = null;
 	// Database credentials
 	static final String USER = "irc";
-	static final String PASS = "chatdat";
+	static final String PASS = "chatdent";
 
 	/**
 	 * Méthode qui va nous retourner notre instance
