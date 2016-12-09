@@ -3,7 +3,9 @@ package com.irc.metier;
 public class Personne {
 	private int id;
 	private String nickname;
-	
+	public Personne(){
+		
+	}
 	public Personne(int id,String nickname){
 		this.id = id;
 		this.nickname=nickname;

@@ -9,29 +9,29 @@ import com.mysql.jdbc.Statement;
 public class Database {
 	// JDBC driver name and database URL
 	static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-	static final String DB_URL = "jdbc:mysql://localhost/irc";
-	Connection conn = null;
+	static final String DB_URL = "jdbc:mysql://89.89.15.87:150/irc";
+	static Connection conn = null;
 	Statement stmt = null;
 	// Database credentials
 	static final String USER = "irc";
 	static final String PASS = "chatdat";
 
-	public Database() throws ClassNotFoundException {
-		this.conn = createConnection();
-	}
-
-	public Connection createConnection() throws ClassNotFoundException {
-		try {
-			// STEP 2: Register JDBC driver
-			Class.forName("com.mysql.jdbc.Driver");
-
-			// STEP 3: Open a connection
-			System.out.println("Connecting to database...");
-			conn = (Connection) DriverManager.getConnection(DB_URL, USER, PASS);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return conn;
+	/**
+	 * Méthode qui va nous retourner notre instance
+	 * et la créer si elle n'existe pas...
+	 * @return
+	 */
+	public static Connection getInstance(){
+		if(conn == null){
+			try {
+				// STEP 3: Open a connection
+				System.out.println("Connecting to database...");
+				conn = (Connection) DriverManager.getConnection(DB_URL, USER, PASS);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}		
+		return conn;	
 	}
 
 	/**

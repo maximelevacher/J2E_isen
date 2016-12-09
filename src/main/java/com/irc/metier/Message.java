@@ -9,6 +9,8 @@ public class Message {
 	private Personne emmetter;
 	private Date date;
 	
+	public Message() {
+	}
 	public Message(int num,String message,Personne sender, Personne emmetter){
 		this.num = num;
 		this.message = message;
