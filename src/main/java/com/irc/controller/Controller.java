@@ -26,15 +26,19 @@ public class Controller {
 	static final Logger logger = Logger.getLogger(Controller.class);
 	static final String logConfigPath = "conf/log4j.properties";
 	
+	private static final String pathServerConfFile = "conf/servers.txt";
+
 	ClientSimple client = null;
 	GUI view = null;
-	private static final String pathServerConfFile = "conf/servers.txt";
+	
 	private volatile boolean _isRunning = true;
 
 	public Controller(ClientSimple c, GUI v) {
 		client = c;
 		view = v;
-		
+	}
+	
+	public void startClient() {
 		// Récupère les serveurs depuis le fichier et tente de se connecter à chacun de ceux-ci
 		boolean hasConnected = false;
 		LinkedHashMap<InetAddress, Integer> serveurs = loadServersFromFile(pathServerConfFile);
@@ -114,6 +118,8 @@ public class Controller {
 		ClientSimple client = new ClientSimple();
 		GUI view = new GUI();
 		Controller controller = new Controller(client, view);
+		
 		view.addListenener(controller);
+		controller.startClient();
 	}
 }
