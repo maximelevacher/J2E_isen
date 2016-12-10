@@ -31,6 +31,7 @@ public class MessageDAO extends DAO<Message>{
 		}
 		return message;
 	}
+	
 	@Override
 	public Message create(Message obj) {
 		 Statement stmt = null;

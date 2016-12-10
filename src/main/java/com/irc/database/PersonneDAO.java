@@ -27,6 +27,26 @@ public class PersonneDAO extends DAO<Personne>{
 		return personne;
 	}
 
+	public Personne findByNickname(String nickname) throws SQLException {
+		Personne personne = new Personne();
+		String sql = "SELECT * FROM client WHERE CL_nickname="+nickname;
+		try {
+			ResultSet result = (ResultSet) connect.createStatement().executeQuery(sql);
+			if(result.first()){
+				while (result.next()) {
+					// Retrieve by column name
+					personne.setNickname(result.getString("CL_nickname"));
+					personne.setId(result.getLong("CL_num"));
+				}
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return personne;
+	}	
+	
+
 	@Override
 	public Personne create(Personne obj) {
 		// TODO Auto-generated method stub

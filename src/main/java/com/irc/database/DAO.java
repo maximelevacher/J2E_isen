@@ -3,6 +3,8 @@ package com.irc.database;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import com.irc.metier.Message;
+
 public abstract class DAO<T> {
 
 	public Connection connect = Database.getInstance();
@@ -33,4 +35,5 @@ public abstract class DAO<T> {
 	 * @param obj
 	 */
 	public abstract void delete(T obj);
+
 }
