@@ -12,6 +12,9 @@ import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.apache.log4j.Logger;
+
+import com.irc.client.ClientSimple;
 import com.irc.controller.Controller;
 
 import java.awt.GridLayout;
@@ -38,6 +41,12 @@ import javax.swing.SwingConstants;
  *
  */
 public class GUI extends JFrame implements MouseListener, ChangeListener, ActionListener {
+	/**
+	 * Permet de logger des messages suivant le fichier de configuration log4j.properties
+	 */
+	static final Logger logger = Logger.getLogger(GUI.class);
+	static final String logConfigPath = "conf/log4j.properties";
+	
 	private Controller controller;
 	JTabbedPane messageArea = null;
 	JTextArea textAreaReceiveMessage = null;
@@ -139,7 +148,7 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
-		 System.out.println("You clicked the button, using an ActionListener");
+		logger.info("You clicked the button, using an ActionListener");
 	}
 
 	@Override
@@ -169,7 +178,7 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 	MouseListener sendButtonListener = new MouseAdapter() {
 		public void mouseClicked(MouseEvent mouseEvent) {
 			if(textAreaSendMessage.getText().length()!=0){
-				System.out.println(textAreaSendMessage.getText());
+				logger.info("Click sur envoi. Message: " + textAreaSendMessage.getText());
 				controller.onClickOnSendMessage(textAreaSendMessage.getText());
 				textAreaSendMessage.setText("");
 			}else{

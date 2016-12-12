@@ -37,9 +37,10 @@ public class Controller {
 	
 	ClientSimple client = null;
 	GUI view = null;
-	
-	private volatile boolean _isRunning = true;
 
+	private volatile boolean _isRunning = true;
+	private String _username = null;
+	
 	public Controller(ClientSimple c, GUI v) {
 		client = c;
 		view = v;
@@ -120,6 +121,7 @@ public class Controller {
 	}
 	
 	public void onClickOnLoginButton(String username) {
+		_username = username;
 		state = States.CONNECTION;
 	}
 	
@@ -129,6 +131,14 @@ public class Controller {
 	
 	public void setState(States s) {
 		state = s;
+	}
+	
+	public String get_username() {
+		return _username;
+	}
+
+	public void set_username(String _username) {
+		this._username = _username;
 	}
 	
 	public static void main(String[] args) {
@@ -151,6 +161,7 @@ public class Controller {
 				case CONNECTION:
 					viewConnected.setVisible(true);
 					controller.startClient();
+					client.setNickName(controller.get_username());
 					controller.setState(Controller.States.CONNECTED);
 					break;
 				case CONNECTED:
