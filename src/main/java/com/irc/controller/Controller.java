@@ -16,6 +16,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 import com.irc.client.ClientSimple;
 import com.irc.ihm.GUI;
+import com.irc.ihm.LoginWindow;
 
 /**
  * Cette classe fait le lien entre l'IHM et le client
@@ -28,6 +29,12 @@ public class Controller {
 	
 	private static final String pathServerConfFile = "conf/servers.txt";
 
+	static enum States {
+		LOGIN, CONNECTION, CONNECTED
+	}
+	
+	public States state = States.LOGIN;
+	
 	ClientSimple client = null;
 	GUI view = null;
 	
@@ -112,14 +119,43 @@ public class Controller {
 		return serveurs;
 	}
 	
+	public void onClickOnLoginButton(String username) {
+		state = States.CONNECTION;
+	}
+	
+	public States getState() {
+		return state;
+	}
+	
+	public void setState(States s) {
+		state = s;
+	}
+	
 	public static void main(String[] args) {
 		PropertyConfigurator.configure(logConfigPath);
 
 		ClientSimple client = new ClientSimple();
-		GUI view = new GUI();
-		Controller controller = new Controller(client, view);
+		GUI viewConnected = new GUI();
+		
+		Controller controller = new Controller(client, viewConnected);
 
-		view.addListenener(controller);
-		controller.startClient();
+		viewConnected.addListenener(controller);
+
+		LoginWindow login = new LoginWindow();
+		login.addListenener(controller);
+		
+		while (true) {
+			switch(controller.getState()) {
+				case LOGIN:
+					break;
+				case CONNECTION:
+					viewConnected.setVisible(true);
+					controller.startClient();
+					controller.setState(Controller.States.CONNECTED);
+					break;
+				case CONNECTED:
+					break;
+			}
+		}
 	}
 }
