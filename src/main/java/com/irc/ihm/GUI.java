@@ -3,8 +3,14 @@ package com.irc.ihm;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+
 import javax.swing.JList;
 import javax.swing.JButton;
 import javax.swing.JTabbedPane;
@@ -14,7 +20,9 @@ import javax.swing.event.ChangeListener;
 
 import com.irc.controller.Controller;
 import com.irc.database.MessageDAO;
+import com.irc.database.PersonneDAO;
 import com.irc.metier.Message;
+import com.irc.metier.Personne;
 
 import java.awt.GridLayout;
 import java.awt.BorderLayout;
@@ -29,6 +37,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.sql.SQLException;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -41,12 +50,31 @@ import javax.swing.SwingConstants;
  */
 public class GUI extends JFrame implements MouseListener, ChangeListener, ActionListener {
 	private Controller controller;
+	// DAO personne
+	PersonneDAO personneDAO = new PersonneDAO();
+	// Information de la personne
+	Personne personne = null;
+	// Les TabbedPane
 	JTabbedPane messageArea = null;
 	JTabbedPane mainTabbedPane = null;
+	// Liste des connecté
+	JList listConnected = null;
+	// Les TextField
+	JTextField inputNickname= null;
+	// Les TextArea
 	JTextArea textAreaReceiveMessage = null;
-	JSplitPane messageConnected = null;
 	JTextArea textAreaSendMessage= null;
+	// Les SplitPane
+	JSplitPane messageConnected = null;
+	//Les JPanel
+	JPanel authJpanel = null;
+	JPanel espaceSendMessage= null;
+	// Les Buttons
 	JButton sendButton = null;
+	JButton buttonWithoutAuth=null;
+	JButton buttonFaceBook=null;
+	JButton buttonAdmin=null;
+	JButton seConnecter = null;
 	public GUI() {
 		setTitle("ChatDent");
 		setSize(900, 700);
@@ -57,22 +85,25 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		getContentPane().setLayout(new BorderLayout(0, 0));
 		// on cré la partie liste des messages et liste des personne connecté
 		messageConnected = new JSplitPane();
-		messageConnected.setResizeWeight(1);
+		messageConnected.setResizeWeight(0.99);
 		getContentPane().add(messageConnected, BorderLayout.CENTER);
+		// on génère la partie demandant l'authentification
+		messageConnected.setLeftComponent(choixAuthentification());
+		authentificationPanel(messageArea,"Authentification");
+		authJpanel =new JPanel();
+		messageConnected.setRightComponent(authJpanel);
 		// Génère une première tab correspondant à notre partie général
-		messageArea = new JTabbedPane(JTabbedPane.TOP);
-		messageArea.addChangeListener(this);
-		messageConnected.setLeftComponent(messageArea);
-		addPanelTab(messageArea, "General");
+		//messageConnected.setLeftComponent(addMessageGeneral());
+		//addPanelTab(messageArea, "General");
 		// Liste des personnes connecté
-		JList<String> list = new JList<String>(updateConnected());
-		messageConnected.setRightComponent(list);
-		list.addMouseListener(mouseListener);
+	//	JList<String> list = new JList<String>(updateConnected());
+		//messageConnected.setRightComponent(list);
+	//	list.addMouseListener(mouseListener);
 		// on affiche la partie d'envoi du message
-		Panel espaceSendMessage = new Panel();
+		/*Panel espaceSendMessage = new Panel();
 		getContentPane().add(espaceSendMessage, BorderLayout.SOUTH);
 		espaceSendMessage.setLayout(new BorderLayout(0, 0));
-		espaceSendMessage.add(sendMessage(), BorderLayout.SOUTH);
+		espaceSendMessage.add(sendMessage(), BorderLayout.SOUTH);*/
 		setVisible(true);
 	}
 
@@ -126,12 +157,23 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		return menuBar;
 	}
 	
+	public JTabbedPane choixAuthentification(){
+		messageArea = new JTabbedPane(JTabbedPane.TOP);
+		messageArea.addChangeListener(this);
+		return messageArea;
+		
+	}
 	public JTabbedPane addMessageGeneral(){
 		messageArea = new JTabbedPane(JTabbedPane.TOP);
 		messageArea.addChangeListener(this);
 		return messageArea;
 	}
 
+	protected JTabbedPane authentificationPanel(JTabbedPane messageArea, String nomClient) {
+		messageArea.addTab(nomClient, null, selectAutentification(), null);
+		return messageArea;
+	}
+	
 	protected JTabbedPane addPanelTab(JTabbedPane messageArea, String nomClient) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridLayout());
@@ -139,7 +181,42 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		messageArea.addTab(nomClient, null, panel, null);
 		return messageArea;
 	}
+	/*
+	 * JPanel qui nous permet de faire afficher les possibilité d'authentification
+	 */
+	protected JPanel selectAutentification() {
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridBagLayout());
+		buttonAdmin = new JButton("Connexion Admin");
+		buttonAdmin.addMouseListener(mouseAuth);
+		buttonFaceBook = new JButton("Connexion Facebook");
+		buttonFaceBook.addMouseListener(mouseFacebook);
+		buttonWithoutAuth = new JButton("Général");
+		buttonWithoutAuth.addMouseListener(mouseWithoutAuth);
+		/*panel.add(buttonAdmin,BorderLayout.CENTER);
+		panel.add(buttonFaceBook,BorderLayout.CENTER);
+		panel.add(buttonWithoutAuth, BorderLayout.CENTER);*/
+		 GridBagConstraints c = new GridBagConstraints();
+		    c.gridx = 0;
+		    c.gridy = 6;
 
+		    panel.add(buttonAdmin, c);
+
+		    c = new GridBagConstraints();
+		    c.gridx = 0;
+		    c.gridy = 3;
+		    panel.add(buttonFaceBook, c);
+
+		    c = new GridBagConstraints();
+		    c.gridx = 0;
+		    c.gridy = 0;
+		    panel.add(buttonWithoutAuth, c);
+
+		return panel;
+	}
+	/*
+	 * TextArea conteant les différents messages
+	 */
 	protected JTextArea addMessageList() {
 		textAreaReceiveMessage = new JTextArea();
 		textAreaReceiveMessage.setText("");
@@ -179,6 +256,84 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 	MouseListener sendButtonListener = new MouseAdapter() {
 		public void mouseClicked(MouseEvent mouseEvent) {
 			if(textAreaSendMessage.getText().length()!=0){
+				controller.onClickOnSendMessage(textAreaSendMessage.getText());
+				textAreaSendMessage.setText("");
+			}else{
+				
+			}
+		}
+	};
+	MouseListener mouseWithoutAuth = new MouseAdapter() {
+		public void mouseClicked(MouseEvent mouseEvent) {
+			authJpanel = new JPanel();
+			JLabel text= new JLabel("NickName");
+			 inputNickname = new JTextField();
+			 inputNickname.setName("nickname");
+			seConnecter = new JButton("Se connecter");
+			seConnecter.setName("seconnecter");
+			seConnecter.addMouseListener(mouseConnect);
+			inputNickname.setPreferredSize(new Dimension(200, 30));
+			authJpanel.add(text);
+			authJpanel.add(inputNickname);
+			authJpanel.add(seConnecter);
+			messageConnected.setRightComponent(authJpanel);
+			
+		}
+	};
+	MouseListener mouseAuth = new MouseAdapter() {
+		public void mouseClicked(MouseEvent mouseEvent) {
+			if(textAreaSendMessage.getText().length()!=0){
+				controller.onClickOnSendMessage(textAreaSendMessage.getText());
+				textAreaSendMessage.setText("");
+			}else{
+				
+			}
+		}
+	};
+	/*
+	 * Mouse Listner du bouton se connecter
+	 * Lors du click sur le bouton se connecter de la partie authentification
+	 * on a vérifier si le nickname existe
+	 * si le nickname existe alors on le récupère
+	 * Sinon on l'ajoute
+	 * 
+	 * Une fois l'utilisateur récupéré on fait afficher l'espace permettant d'interragir entre les utulisateurs
+	 */
+	MouseListener mouseConnect = new MouseAdapter() {
+		public void mouseClicked(MouseEvent mouseEvent) {
+			// on récupère le nickname
+			if(inputNickname.getText().length()!=0){
+				try {
+					personne = personneDAO.findByNickname(inputNickname.getText());
+					if(personne.getNickname()!=null){
+						personne = personneDAO.findByNickname(inputNickname.getText());
+					}else{
+						personne.setNickname(inputNickname.getText());
+						personneDAO.create(personne);
+					}
+					// on ouvre le Text area 
+					messageConnected.setLeftComponent(addMessageGeneral());
+					addPanelTab(messageArea, "General");
+					// on ouvre la liste des connecté
+					JList<String> list = new JList<String>(updateConnected());
+					messageConnected.setRightComponent(list);
+					list.addMouseListener(mouseListener);
+					// on affiche la partie d'envoi du message
+					espaceSendMessage = new JPanel();
+					getContentPane().add(espaceSendMessage, BorderLayout.SOUTH);
+					espaceSendMessage.setLayout(new BorderLayout(0, 0));
+					espaceSendMessage.add(sendMessage(), BorderLayout.SOUTH);
+					setVisible(true);
+					} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	};
+	MouseListener mouseFacebook = new MouseAdapter() {
+		public void mouseClicked(MouseEvent mouseEvent) {
+			if(textAreaSendMessage.getText().length()!=0){
 				System.out.println(textAreaSendMessage.getText());
 				controller.onClickOnSendMessage(textAreaSendMessage.getText());
 				textAreaSendMessage.setText("");
@@ -189,11 +344,11 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 	};
 	MouseListener mouseListener = new MouseAdapter() {
 		public void mouseClicked(MouseEvent mouseEvent) {
-			JList theList = (JList) mouseEvent.getSource();
+			listConnected = (JList) mouseEvent.getSource();
 			if (mouseEvent.getClickCount() == 2) {
-				int index = theList.locationToIndex(mouseEvent.getPoint());
+				int index = listConnected.locationToIndex(mouseEvent.getPoint());
 				if (index >= 0) {
-					Object o = theList.getModel().getElementAt(index);
+					Object o = listConnected.getModel().getElementAt(index);
 					// System.out.println("Double-clicked on: " + o.toString());
 					addPanelTab(messageArea, o.toString());
 				}
