@@ -5,6 +5,7 @@ import java.sql.SQLException;
 
 import com.irc.metier.Message;
 import com.irc.metier.Personne;
+import com.mysql.jdbc.Statement;
 
 public class PersonneDAO extends DAO<Personne>{
 
@@ -29,15 +30,13 @@ public class PersonneDAO extends DAO<Personne>{
 
 	public Personne findByNickname(String nickname) throws SQLException {
 		Personne personne = new Personne();
-		String sql = "SELECT * FROM client WHERE CL_nickname="+nickname;
+		String sql = "SELECT * FROM client WHERE CL_nickname='"+nickname+"'";
 		try {
 			ResultSet result = (ResultSet) connect.createStatement().executeQuery(sql);
 			if(result.first()){
-				while (result.next()) {
-					// Retrieve by column name
-					personne.setNickname(result.getString("CL_nickname"));
-					personne.setId(result.getLong("CL_num"));
-				}
+				// Retrieve by column name
+				personne.setNickname(result.getString("CL_nickname"));
+				personne.setId(result.getLong("CL_id"));
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -49,7 +48,21 @@ public class PersonneDAO extends DAO<Personne>{
 
 	@Override
 	public Personne create(Personne obj) {
-		// TODO Auto-generated method stub
+		 Statement stmt = null;
+		try {
+			stmt = (Statement) connect.createStatement();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	      
+		String sql = "Insert into client(CL_nickname) VALUES ('"+obj.getNickname()+"')";
+		try {
+			stmt.executeUpdate(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return null;
 	}
 
