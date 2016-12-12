@@ -1,12 +1,21 @@
 package com.irc.database;
 
 import java.util.ArrayList;
+
+import org.apache.log4j.Logger;
+
 import java.sql.*;
 
 import com.mysql.jdbc.Connection;
 import com.mysql.jdbc.Statement;
 
 public class Database {
+	/**
+	 * Permet de logger des messages suivant le fichier de configuration log4j.properties
+	 */
+	static final Logger logger = Logger.getLogger(Database.class);
+	static final String logConfigPath = "conf/log4j.properties";
+	
 	// JDBC driver name and database URL
 	static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
 	static final String DB_URL = "jdbc:mysql://89.89.15.87:150/irc";
@@ -25,7 +34,7 @@ public class Database {
 		if(conn == null){
 			try {
 				// STEP 3: Open a connection
-				System.out.println("Connecting to database...");
+				logger.info("Connexion à la base de donnée: " + DB_URL);
 				conn = (Connection) DriverManager.getConnection(DB_URL, USER, PASS);
 			} catch (SQLException e) {
 				e.printStackTrace();

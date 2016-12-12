@@ -118,7 +118,7 @@ public class Controller {
 		ClientSimple client = new ClientSimple();
 		GUI view = new GUI();
 		Controller controller = new Controller(client, view);
-		
+
 		view.addListenener(controller);
 		controller.startClient();
 	}

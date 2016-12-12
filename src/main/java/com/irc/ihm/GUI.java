@@ -12,7 +12,10 @@ import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.apache.log4j.Logger;
+
 import com.irc.controller.Controller;
+import com.irc.database.Database;
 import com.irc.database.MessageDAO;
 import com.irc.metier.Message;
 
@@ -40,6 +43,12 @@ import javax.swing.SwingConstants;
  *
  */
 public class GUI extends JFrame implements MouseListener, ChangeListener, ActionListener {
+	/**
+	 * Permet de logger des messages suivant le fichier de configuration log4j.properties
+	 */
+	static final Logger logger = Logger.getLogger(GUI.class);
+	static final String logConfigPath = "conf/log4j.properties";
+	
 	private Controller controller;
 	JTabbedPane messageArea = null;
 	JTabbedPane mainTabbedPane = null;
@@ -47,6 +56,7 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 	JSplitPane messageConnected = null;
 	JTextArea textAreaSendMessage= null;
 	JButton sendButton = null;
+
 	public GUI() {
 		setTitle("ChatDent");
 		setSize(900, 700);
@@ -74,10 +84,6 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		espaceSendMessage.setLayout(new BorderLayout(0, 0));
 		espaceSendMessage.add(sendMessage(), BorderLayout.SOUTH);
 		setVisible(true);
-	}
-
-	public static void main(String[] args) {
-		new GUI();
 	}
 
 	public void addListenener(Controller c) {
@@ -125,7 +131,7 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		menuBar_1.add(mnTest);
 		return menuBar;
 	}
-	
+
 	public JTabbedPane addMessageGeneral(){
 		messageArea = new JTabbedPane(JTabbedPane.TOP);
 		messageArea.addChangeListener(this);
@@ -149,7 +155,7 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
-		 System.out.println("You clicked the button, using an ActionListener");
+		logger.info("You clicked the button, using an ActionListener");
 	}
 
 	@Override
@@ -179,10 +185,10 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 	MouseListener sendButtonListener = new MouseAdapter() {
 		public void mouseClicked(MouseEvent mouseEvent) {
 			if(textAreaSendMessage.getText().length()!=0){
-				System.out.println(textAreaSendMessage.getText());
+				logger.info("Click envoi message: " + textAreaSendMessage.getText());
 				controller.onClickOnSendMessage(textAreaSendMessage.getText());
 				textAreaSendMessage.setText("");
-			}else{
+			} else {
 				
 			}
 		}
@@ -212,9 +218,6 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 
 	public void appendMessageToArea(String message) {
 		 textAreaReceiveMessage.setText(textAreaReceiveMessage.getText() + message + System.lineSeparator());
-		MessageDAO messageDAO = new MessageDAO();
-		Message message1 = new Message();
-		messageDAO.create(message1);
 	}
 
 	@Override
