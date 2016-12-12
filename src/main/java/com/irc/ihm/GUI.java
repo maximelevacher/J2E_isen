@@ -42,7 +42,9 @@ import javax.swing.SwingConstants;
 public class GUI extends JFrame implements MouseListener, ChangeListener, ActionListener {
 	private Controller controller;
 	JTabbedPane messageArea = null;
+	JTabbedPane mainTabbedPane = null;
 	JTextArea textAreaReceiveMessage = null;
+	JSplitPane messageConnected = null;
 	JTextArea textAreaSendMessage= null;
 	JButton sendButton = null;
 	public GUI() {
@@ -54,8 +56,8 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		menuBar();
 		getContentPane().setLayout(new BorderLayout(0, 0));
 		// on cré la partie liste des messages et liste des personne connecté
-		JSplitPane messageConnected = new JSplitPane();
-		messageConnected.setResizeWeight(0.8);
+		messageConnected = new JSplitPane();
+		messageConnected.setResizeWeight(1);
 		getContentPane().add(messageConnected, BorderLayout.CENTER);
 		// Génère une première tab correspondant à notre partie général
 		messageArea = new JTabbedPane(JTabbedPane.TOP);
@@ -122,6 +124,12 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		JMenu mnTest = new JMenu("Quit");
 		menuBar_1.add(mnTest);
 		return menuBar;
+	}
+	
+	public JTabbedPane addMessageGeneral(){
+		messageArea = new JTabbedPane(JTabbedPane.TOP);
+		messageArea.addChangeListener(this);
+		return messageArea;
 	}
 
 	protected JTabbedPane addPanelTab(JTabbedPane messageArea, String nomClient) {
