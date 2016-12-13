@@ -37,13 +37,15 @@ public class Controller {
 	
 	ClientSimple client = null;
 	GUI view = null;
+	LoginWindow login = null;
 
 	private volatile boolean _isRunning = true;
 	private String _username = null;
 	
-	public Controller(ClientSimple c, GUI v) {
+	public Controller(ClientSimple c, GUI v, LoginWindow l) {
 		client = c;
 		view = v;
+		login = l;
 	}
 	
 	public void startClient() {
@@ -122,7 +124,11 @@ public class Controller {
 	
 	public void onClickOnLoginButton(String username) {
 		_username = username;
-		state = States.CONNECTION;
+		if(_username == null || _username.isEmpty()) {
+			login.showError("Le pseudonyme ne peut pas être vide.");
+		} else {
+			state = States.CONNECTION;
+		}
 	}
 	
 	public States getState() {
@@ -146,12 +152,11 @@ public class Controller {
 
 		ClientSimple client = new ClientSimple();
 		GUI viewConnected = new GUI();
-		
-		Controller controller = new Controller(client, viewConnected);
+		LoginWindow login = new LoginWindow();
+
+		Controller controller = new Controller(client, viewConnected, login);
 
 		viewConnected.addListenener(controller);
-
-		LoginWindow login = new LoginWindow();
 		login.addListenener(controller);
 		
 		while (true) {
@@ -159,9 +164,10 @@ public class Controller {
 				case LOGIN:
 					break;
 				case CONNECTION:
-					viewConnected.setVisible(true);
 					controller.startClient();
 					client.setNickName(controller.get_username());
+					viewConnected.setVisible(true);
+					login.setVisible(false);
 					controller.setState(Controller.States.CONNECTED);
 					break;
 				case CONNECTED:

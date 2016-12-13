@@ -7,6 +7,7 @@ import java.awt.event.MouseListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -15,7 +16,7 @@ import com.irc.controller.Controller;
 public class LoginWindow extends JFrame {
 	private Controller controller;
 	private JTextField userText;
-	
+
 	public LoginWindow() {
 		setTitle("Login ChatDent");
 		setSize(300, 125);
@@ -25,9 +26,11 @@ public class LoginWindow extends JFrame {
 		add(panel);
 		placeComponents(panel);
 
+		setLocationRelativeTo(null);
+		setResizable(false);
 		setVisible(true);
 	}
-	
+
 	private void placeComponents(JPanel panel) {
 		panel.setLayout(null);
 
@@ -50,11 +53,15 @@ public class LoginWindow extends JFrame {
 			controller.onClickOnLoginButton(userText.getText());
 		}
 	};
-	
+
+	public void showError(String message) {
+		JOptionPane.showMessageDialog(this, message, "Connexion impossible", JOptionPane.ERROR_MESSAGE);
+	}
+
 	public void addListenener(Controller c) {
 		controller = c;
 	}
-	
+
 	public static void main(String[] args) {
 		LoginWindow login = new LoginWindow();
 	}
