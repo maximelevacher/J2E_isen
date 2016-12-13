@@ -19,7 +19,7 @@ public class ServerMultiClient {
 	static final Logger logger = Logger.getLogger(ServerMultiClient.class);
 	static final String logConfigPath = "conf/log4j.properties";
 
-	static final int CONNECTIONS_LIMIT = 5;
+	static final int CONNECTIONS_LIMIT = 100;
 	static final int DEFAULT_PORT = 45612;
 
 	private ServerSocket serverSocket = null;
@@ -99,7 +99,10 @@ public class ServerMultiClient {
 
 	public boolean isNicknameAvailable(String nickname) {
 		for (ServerThread t : _tabServerThreads) {
-			if (t.getNickName() == nickname) {
+			if (t.getNickName() == null) {
+				continue;
+			}
+			if (t.getNickName().equals(nickname)) {
 				return false;
 			}
 		}

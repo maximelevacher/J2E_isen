@@ -39,6 +39,8 @@ public class Controller {
 	GUI view = null;
 	LoginWindow login = null;
 
+	private Thread threadReceiveMessages = null;
+	
 	private volatile boolean _isRunning = true;
 	private String _username = null;
 	
@@ -69,25 +71,61 @@ public class Controller {
 				System.exit(1);
 			}
 		}
-
-		Thread threadReceiveMessages = new Thread() {
+		
+		_isRunning = true;
+		threadReceiveMessages = new Thread() {
 			public void run() {
 				while(_isRunning) {
 					try {
 						String message = client.receiveMessage();
-						view.appendMessageToArea(message);
+						if(checkMessageCommand(message)) {
+							view.appendMessageToArea(message);
+						}
 					} catch (IOException e) {
-						e.printStackTrace();
+						_isRunning = false;
+						logger.error("Probleme lors de la réception du message.", e);
 						try {
 							client.disconnectFromServer();
 						} catch (IOException e1) {
-							e1.printStackTrace();
+							logger.error("Probleme lors de la deconnexion.", e1);
 						}
 					}
 				}
 			}
 		};
 		threadReceiveMessages.start();
+	}
+	
+	public void stopClient() {
+		try {
+			client.disconnectFromServer();
+			if (threadReceiveMessages != null) {
+				threadReceiveMessages.join();
+			}
+		} catch (IOException | InterruptedException e) {
+			logger.error("Probleme lors de la deconnexion.", e);
+		}
+	}
+	
+	/**
+	 * Vérifie si le message est une commande ou réponse du serveur.<br/>
+	 * Si elle l'est, elle la traite puis indique s'il faut afficher le message ou pas.
+	 * @param message le message à traiter
+	 * @return Si le message doit être affiché ou pas
+	 */
+	private boolean checkMessageCommand(String message) {
+		// Indique de ne pas afficher le message par défaut
+		boolean displayMessage = false;
+		if (message.equals("%nickname_ok")) {
+			setState(Controller.States.CONNECTION);
+		} else if (message.equals("%nickname_taken")) {
+			login.showError("Le pseudonyme est déjà pris");
+			setState(Controller.States.START);
+		} else {
+			// Si ce n'est pas une commande on affiche le message
+			displayMessage = true;
+		}
+		return displayMessage;
 	}
 
 	public void onClickOnSendMessage(String message) {
@@ -127,7 +165,7 @@ public class Controller {
 		if(_username == null || _username.isEmpty()) {
 			login.showError("Le pseudonyme ne peut pas être vide.");
 		} else {
-			state = States.CONNECTION;
+			client.setNickName(get_username());
 		}
 	}
 	
@@ -162,6 +200,7 @@ public class Controller {
 		while (true) {
 			switch(controller.getState()) {
 				case START:
+					controller.stopClient();
 					controller.startClient();
 					login.setVisible(true);
 					viewConnected.setVisible(false);
@@ -170,7 +209,6 @@ public class Controller {
 				case LOGIN:
 					break;
 				case CONNECTION:
-					client.setNickName(controller.get_username());
 					viewConnected.setVisible(true);
 					login.setVisible(false);
 					controller.setState(Controller.States.CONNECTED);

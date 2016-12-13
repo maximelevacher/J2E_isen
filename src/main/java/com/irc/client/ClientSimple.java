@@ -68,6 +68,7 @@ public class ClientSimple {
 	public String receiveMessage() throws IOException {
 		String message = null;
 		message = _in.readLine();
+		logger.info("Message reçu: " + message);
 		if(message == null) {
 			throw new IOException("Impossible de récupérer un message.");
 		}
@@ -79,9 +80,9 @@ public class ClientSimple {
 	 * @throws IOException Si le client n'arrive pas à se deconnecter
 	 */
 	public void disconnectFromServer() throws IOException {
-		_out.close();
-		_in.close();
-		_socket.close();
+		if(_socket != null) {
+			_socket.close();
+		}
 		logger.info("Déconnexion du serveur.");
 	}
 }
