@@ -97,6 +97,15 @@ public class ServerMultiClient {
 		_tabServerThreads.remove(s);
 	}
 
+	public boolean isNicknameAvailable(String nickname) {
+		for (ServerThread t : _tabServerThreads) {
+			if (t.getNickName() == nickname) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public void shutdownServer() throws IOException {
 		isRunning = false;
 		serverSocket.close();

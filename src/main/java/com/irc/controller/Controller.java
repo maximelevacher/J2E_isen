@@ -30,10 +30,10 @@ public class Controller {
 	private static final String pathServerConfFile = "conf/servers.txt";
 
 	static enum States {
-		LOGIN, CONNECTION, CONNECTED
+		START, LOGIN, CONNECTION, CONNECTED
 	}
 	
-	public States state = States.LOGIN;
+	public States state = States.START;
 	
 	ClientSimple client = null;
 	GUI view = null;
@@ -158,13 +158,18 @@ public class Controller {
 
 		viewConnected.addListenener(controller);
 		login.addListenener(controller);
-		
+
 		while (true) {
 			switch(controller.getState()) {
+				case START:
+					controller.startClient();
+					login.setVisible(true);
+					viewConnected.setVisible(false);
+					controller.setState(Controller.States.LOGIN);
+					break;
 				case LOGIN:
 					break;
 				case CONNECTION:
-					controller.startClient();
 					client.setNickName(controller.get_username());
 					viewConnected.setVisible(true);
 					login.setVisible(false);
