@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -162,15 +164,15 @@ public class ServerMultiClientTest {
 				Socket client = new Socket();
 				client.connect(new InetSocketAddress(InetAddress.getLocalHost(), ServerMultiClient.DEFAULT_PORT));
 				try {
-					BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-					PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+					ObjectInputStream in = new ObjectInputStream(client.getInputStream());
+					ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
 
 					// On envoie un message
-					out.println("%ping");
+					out.writeObject("%ping");
 					// Et on tente de lire une réponse du serveur.
 					// Si elle renvoie null, le serveur a fermé la connexion
 					Thread.sleep(100);
-					if(in.readLine() == null) {
+					if(in.readObject() == null) {
 						throw new Exception("Client n'a pas pu se connecter");
 					}
 				} catch (Exception e) {
