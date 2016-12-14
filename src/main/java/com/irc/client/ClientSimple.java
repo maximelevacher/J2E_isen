@@ -1,9 +1,8 @@
 package com.irc.client;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -26,8 +25,8 @@ public class ClientSimple {
 	private final static int CONNECT_TIMEOUT = 1000;
 	
 	private Socket _socket = null;
-	private PrintWriter _out = null;
-	private BufferedReader _in = null;
+	private ObjectOutputStream _out = null;
+	private ObjectInputStream _in = null;
 
 	/**
 	 * Connecte le client au serveur indiqué
@@ -38,25 +37,27 @@ public class ClientSimple {
 	public void connectToServer(InetAddress hote, int port) throws IOException {
 		_socket = new Socket();
 		_socket.connect(new InetSocketAddress(hote, port), CONNECT_TIMEOUT);
-		_out = new PrintWriter(_socket.getOutputStream(), true);
-		_in = new BufferedReader(new InputStreamReader(_socket.getInputStream()));
+		_out = new ObjectOutputStream(_socket.getOutputStream());
+		_in = new ObjectInputStream(_socket.getInputStream());
 		logger.info("Connecté au serveur: " + hote.toString() + ":" + port);
 	}
 	
 	/**
 	 * Demande au serveur de changer le pseudo du client
 	 * @param nickname Le pseudo demandé
+	 * @throws IOException 
 	 */
-	public void setNickName(String nickname) {
+	public void setNickName(String nickname) throws IOException {
 		sendMessage("%nickname " + nickname);
 	}
 
 	/**
 	 * Envoie un message au serveur
 	 * @param message
+	 * @throws IOException 
 	 */
-	public void sendMessage(String message) {
-		_out.println(message);
+	public void sendMessage(String message) throws IOException {
+		_out.writeObject(message);
 		logger.info("Envoi du message: " + message);
 	}
 	
@@ -64,10 +65,11 @@ public class ClientSimple {
 	 * Attends un message du serveur. La méthode est bloquante.
 	 * @return Un string contenant le message se terminant par un \r ou \n
 	 * @throws IOException
+	 * @throws ClassNotFoundException 
 	 */
-	public String receiveMessage() throws IOException {
+	public String receiveMessage() throws IOException, ClassNotFoundException {
 		String message = null;
-		message = _in.readLine();
+		message = (String) _in.readObject();
 		logger.info("Message reçu: " + message);
 		if(message == null) {
 			throw new IOException("Impossible de récupérer un message.");

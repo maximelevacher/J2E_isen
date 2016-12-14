@@ -1,2 +1,3 @@
+irc.yahi.fr:55555
+192.168.1.30:45612
 localhost:45612
-yahi.fr:55555

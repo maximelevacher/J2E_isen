@@ -205,7 +205,7 @@ public class ClientSimpleTest {
 				messageRecus.add(message);
 			} while (!message.equals("Stop Test"));
 			assertEquals(messageTestReceiveSequence, messageRecus);
-		} catch (IOException e) {
+		} catch (IOException | ClassNotFoundException e) {
 		}
 	}
 	
@@ -220,7 +220,7 @@ public class ClientSimpleTest {
 		try {
 			client.receiveMessage();
 			fail("Le message a bien été reçu du serveur.");
-		} catch (IOException e) {
+		} catch (IOException | ClassNotFoundException e) {
 			assertEquals("Impossible de récupérer un message.", e.getMessage());
 		}
 	}
@@ -234,7 +234,7 @@ public class ClientSimpleTest {
 			client.setNickName("Zak");
 			String message = client.receiveMessage();
 			assertEquals("Nickname:Zak", message);
-		} catch (IOException e) {
+		} catch (IOException | ClassNotFoundException e) {
 		}
 	}
 }

@@ -108,6 +108,14 @@ public class ServerMultiClient {
 		}
 		return true;
 	}
+	
+	public Vector<String> getListOfNicknameConnected() {
+		Vector<String> listNicknames = new Vector<String>();
+		for (ServerThread t : _tabServerThreads) {
+			listNicknames.add(t.getNickName());
+		}
+		return listNicknames;
+	}
 
 	public void shutdownServer() throws IOException {
 		isRunning = false;

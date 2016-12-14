@@ -4,10 +4,9 @@ import java.net.Socket;
 
 import org.apache.log4j.Logger;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 /**
  * Cette classe gère un client connecté sur le serveur
@@ -24,8 +23,8 @@ public class ServerThread implements Runnable {
 	private ServerMultiClient _serverMultiClient;
 	private Thread _thread;
 	private Socket _socket;
-	private PrintWriter _out;
-	private BufferedReader _in;
+	private ObjectOutputStream _out;
+	private ObjectInputStream _in;
 	private String _nickName;
 	private int _id;
 	private volatile boolean _isRunning = true;
@@ -63,8 +62,8 @@ public class ServerThread implements Runnable {
 	 * @throws IOException S'il est impossible de récuperer les flux
 	 */
 	public void openStreams() throws IOException {
-		_out = new PrintWriter(_socket.getOutputStream(), true);
-		_in = new BufferedReader(new InputStreamReader(_socket.getInputStream()));
+		_out = new ObjectOutputStream(_socket.getOutputStream());
+		_in = new ObjectInputStream(_socket.getInputStream());
 		logger.info("Ouvre les streams du client qui vient de se connecter.");
 	}
 	
@@ -86,11 +85,17 @@ public class ServerThread implements Runnable {
 	
 	/**
 	 * Envoie un message vers le client connecté
-	 * @param message
+	 * @param message le message à envoyer
+	 * @throws IOException Si l'envoi à échoué
 	 */
 	public void sendMessage(String message) {
-		_out.println(message);
-		logger.info(getNickName() + "| Envoi du message: " + message);
+		try {
+			_out.writeObject(message);
+			logger.info(getNickName() + "| Envoi du message: " + message);
+		} catch (IOException e) {
+			logger.error("Impossible d'envoyer un message.", e);
+			closeStreams();
+		}
 	}
 
 	/**
@@ -100,12 +105,12 @@ public class ServerThread implements Runnable {
 	public String receiveMessage() {
 		String message = null;
 		try {
-			message = _in.readLine();
+			message = (String) _in.readObject();
 			if (message == null) {
 				throw new IOException("Fin de stream.");
 			}
 			logger.info("Message reçu: " + message);
-		} catch (IOException e) {
+		} catch (IOException | ClassNotFoundException e) {
 			logger.error("Impossible de recevoir un message.", e);
 			closeStreams();
 		}
@@ -141,6 +146,8 @@ public class ServerThread implements Runnable {
 					 }
 				} else if (clientInput.startsWith("%ping")) {
 					sendMessage("Pong!");
+				} else if (clientInput.startsWith("%getListConnected")) {
+					
 				} else {
 					logger.info("Envoi d'un broadcast à tous les autres: " + getNickName() + " > " + clientInput);
 					_serverMultiClient.broadcastMessage(getNickName() + " > " + clientInput);

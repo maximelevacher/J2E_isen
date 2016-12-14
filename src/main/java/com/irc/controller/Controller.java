@@ -67,8 +67,10 @@ public class Controller {
 				// Si aucune exception est levée c'est qu'on a reussi, on sort alors de la boucle
 				hasConnected = true;
 			} catch (IOException e) {
-				logger.error("N'a pu se connecter à aucun serveur.", e);
-				System.exit(1);
+				if(!i.hasNext()) {
+					logger.error("N'a pu se connecter à aucun serveur.", e);
+					System.exit(1);
+				}
 			}
 		}
 		
@@ -81,7 +83,7 @@ public class Controller {
 						if(checkMessageCommand(message)) {
 							view.appendMessageToArea(message);
 						}
-					} catch (IOException e) {
+					} catch (IOException | ClassNotFoundException e) {
 						_isRunning = false;
 						logger.error("Probleme lors de la réception du message.", e);
 						try {
@@ -129,7 +131,15 @@ public class Controller {
 	}
 
 	public void onClickOnSendMessage(String message) {
-		client.sendMessage(message);
+		try {
+			client.sendMessage(message);
+		} catch (IOException e) {
+			logger.error("Impossible d'envoyer un message.", e);
+			try {
+				client.disconnectFromServer();
+			} catch (IOException e1) {
+			}
+		}
 	}
 	
 	/**
@@ -165,7 +175,15 @@ public class Controller {
 		if(_username == null || _username.isEmpty()) {
 			login.showError("Le pseudonyme ne peut pas être vide.");
 		} else {
-			client.setNickName(get_username());
+			try {
+				client.setNickName(get_username());
+			} catch (IOException e) {
+				logger.error("Impossible de définir le pseudonyme.", e);
+				try {
+					client.disconnectFromServer();
+				} catch (IOException e1) {
+				}
+			}
 		}
 	}
 	
