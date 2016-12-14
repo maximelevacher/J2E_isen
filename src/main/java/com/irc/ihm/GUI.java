@@ -3,6 +3,7 @@ package com.irc.ihm;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
 
 import java.awt.Color;
 import javax.swing.JList;
@@ -11,6 +12,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.DefaultCaret;
 
 import org.apache.log4j.Logger;
 
@@ -21,15 +23,20 @@ import java.awt.GridLayout;
 import java.awt.BorderLayout;
 import javax.swing.JSplitPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JMenu;
 import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -52,9 +59,11 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 	JTextArea textAreaReceiveMessage = null;
 	JTextArea textAreaSendMessage= null;
 	JButton sendButton = null;
+	JList<String> listConnected = null;
 	public GUI() {
 		setTitle("ChatDent");
 		setSize(900, 700);
+		setResizable(false);
 		this.addMouseListener(this);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		// on initialise la bar de menu
@@ -62,7 +71,8 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		getContentPane().setLayout(new BorderLayout(0, 0));
 		// on cré la partie liste des messages et liste des personne connecté
 		JSplitPane messageConnected = new JSplitPane();
-		messageConnected.setResizeWeight(0.8);
+		messageConnected.setResizeWeight(0.5);
+		messageConnected.setEnabled(false);
 		getContentPane().add(messageConnected, BorderLayout.CENTER);
 		// Génère une première tab correspondant à notre partie général
 		messageArea = new JTabbedPane(JTabbedPane.TOP);
@@ -70,9 +80,9 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		messageConnected.setLeftComponent(messageArea);
 		addPanelTab(messageArea, "General");
 		// Liste des personnes connecté
-		JList<String> list = new JList<String>(updateConnected());
-		messageConnected.setRightComponent(list);
-		list.addMouseListener(mouseListener);
+		listConnected = new JList<String>();
+		messageConnected.setRightComponent(listConnected);
+		listConnected.addMouseListener(mouseListener);
 		// on affiche la partie d'envoi du message
 		Panel espaceSendMessage = new Panel();
 		getContentPane().add(espaceSendMessage, BorderLayout.SOUTH);
@@ -82,31 +92,30 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 	}
 
 	public static void main(String[] args) {
-		new GUI();
+		GUI g = new GUI();
+		g.setVisible(true);
 	}
 
 	public void addListenener(Controller c) {
 		controller = c;
 	}
-
-	protected DefaultListModel<String> updateConnected() {
-		DefaultListModel<String> listModel;
-		listModel = new DefaultListModel<String>();
-		listModel.addElement("Maxime Esperandieu");
-		listModel.addElement("Zakaria Yahi");
-		listModel.addElement("Brandon Matheon");
-		listModel.addElement("Levacher Maxime");
-		return listModel;
+	
+	public void updateListConnected(Vector<String> v) {
+		listConnected.setListData(v);
 	}
 
 	protected JPanel sendMessage() {
 		Border border = BorderFactory.createLineBorder(Color.BLACK);
 		JPanel panel_2 = new JPanel();
 		textAreaSendMessage = new JTextArea();
-		panel_2.add(textAreaSendMessage);
+		JScrollPane sp = new JScrollPane(textAreaSendMessage);
+		sp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		panel_2.add(sp);
 		textAreaSendMessage.setColumns(50);
 		textAreaSendMessage.setRows(5);
 		textAreaSendMessage.setBorder(border);
+		textAreaSendMessage.setLineWrap(true);
+		textAreaSendMessage.addKeyListener(sendEnterButtonListener);
 
 		sendButton = new JButton("Send");
 		sendButton.setName("send");
@@ -134,7 +143,8 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 	protected JTabbedPane addPanelTab(JTabbedPane messageArea, String nomClient) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridLayout());
-		panel.add(addMessageList());
+		JScrollPane sp = new JScrollPane(addMessageList());
+		panel.add(sp);
 		messageArea.addTab(nomClient, null, panel, null);
 		return messageArea;
 	}
@@ -142,6 +152,10 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 	protected JTextArea addMessageList() {
 		textAreaReceiveMessage = new JTextArea();
 		textAreaReceiveMessage.setText("");
+		textAreaReceiveMessage.setLineWrap(true);
+		textAreaReceiveMessage.setEditable(false);
+		DefaultCaret caret = (DefaultCaret)textAreaReceiveMessage.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		return textAreaReceiveMessage;
 	}
 
@@ -175,15 +189,27 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		// TODO Auto-generated method stub
 
 	}
+	
+	private void sendMessageAndEmptyTextField() {
+		if(textAreaSendMessage.getText().length() != 0) {
+			logger.info("Appui ou clic sur envoi. Message: " + textAreaSendMessage.getText());
+			controller.onClickOnSendMessage(textAreaSendMessage.getText());
+			textAreaSendMessage.setText("");
+		}
+	}
+
+	KeyAdapter sendEnterButtonListener = new KeyAdapter() {
+		public void keyPressed(KeyEvent e) {
+			if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+				e.consume();
+				sendMessageAndEmptyTextField();
+			}
+		}
+	};
+
 	MouseListener sendButtonListener = new MouseAdapter() {
 		public void mouseClicked(MouseEvent mouseEvent) {
-			if(textAreaSendMessage.getText().length()!=0){
-				logger.info("Click sur envoi. Message: " + textAreaSendMessage.getText());
-				controller.onClickOnSendMessage(textAreaSendMessage.getText());
-				textAreaSendMessage.setText("");
-			}else{
-				
-			}
+			sendMessageAndEmptyTextField();
 		}
 	};
 	MouseListener mouseListener = new MouseAdapter() {
@@ -218,5 +244,4 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		// TODO Auto-generated method stub
 		
 	}
-
 }

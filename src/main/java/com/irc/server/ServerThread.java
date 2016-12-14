@@ -88,7 +88,7 @@ public class ServerThread implements Runnable {
 	 * @param message le message à envoyer
 	 * @throws IOException Si l'envoi à échoué
 	 */
-	public void sendMessage(String message) {
+	public void sendMessage(Object message) {
 		try {
 			_out.writeObject(message);
 			logger.info(getNickName() + "| Envoi du message: " + message);
@@ -141,13 +141,14 @@ public class ServerThread implements Runnable {
 						 sendMessage("%nickname_ok");
 						 sendMessage("Bienvenue sur le serveur!");
 						 _serverMultiClient.broadcastMessage(nickname + " vient de se connecter.", this);
+						 _serverMultiClient.broadcastMessage(_serverMultiClient.getListOfNicknameConnected());
 					 } else {
 						 sendMessage("%nickname_taken");
 					 }
 				} else if (clientInput.startsWith("%ping")) {
 					sendMessage("Pong!");
 				} else if (clientInput.startsWith("%getListConnected")) {
-					
+					_serverMultiClient.broadcastMessage(_serverMultiClient.getListOfNicknameConnected());
 				} else {
 					logger.info("Envoi d'un broadcast à tous les autres: " + getNickName() + " > " + clientInput);
 					_serverMultiClient.broadcastMessage(getNickName() + " > " + clientInput);
@@ -158,6 +159,7 @@ public class ServerThread implements Runnable {
 		closeStreams();
 		if (getNickName() != null) {
 			_serverMultiClient.broadcastMessage(getNickName() + " vient de se déconnecter.", this);
+			_serverMultiClient.broadcastMessage(_serverMultiClient.getListOfNicknameConnected(), this);
 		}
 	}
 }

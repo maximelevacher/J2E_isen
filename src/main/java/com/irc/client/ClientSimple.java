@@ -67,9 +67,9 @@ public class ClientSimple {
 	 * @throws IOException
 	 * @throws ClassNotFoundException 
 	 */
-	public String receiveMessage() throws IOException, ClassNotFoundException {
-		String message = null;
-		message = (String) _in.readObject();
+	public Object receiveMessage() throws IOException, ClassNotFoundException {
+		Object message = null;
+		message = _in.readObject();
 		logger.info("Message reçu: " + message);
 		if(message == null) {
 			throw new IOException("Impossible de récupérer un message.");

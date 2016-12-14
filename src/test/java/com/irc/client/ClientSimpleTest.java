@@ -186,7 +186,7 @@ public class ClientSimpleTest {
 				client.sendMessage(s);
 			}
 			try {
-				Thread.sleep(10);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 			}
 			assertEquals(listOfMessageToSend, connectedClients.get(0).messageRecus);
@@ -201,11 +201,13 @@ public class ClientSimpleTest {
 		try {
 			client.connectToServer(InetAddress.getLocalHost(), 55555);
 			client.sendMessage("Start Test Receive Sequence");
-			String message = null;
+			Object objReceived = null;
 			do {
-				message = client.receiveMessage();
-				messageRecus.add(message);
-			} while (!message.equals("Stop Test"));
+				objReceived = client.receiveMessage();
+				if (objReceived instanceof String) {
+					messageRecus.add((String)objReceived);
+				}
+			} while (!objReceived.equals("Stop Test"));
 			assertEquals(messageTestReceiveSequence, messageRecus);
 		} catch (IOException | ClassNotFoundException e) {
 		}
@@ -234,7 +236,11 @@ public class ClientSimpleTest {
 		try {
 			client.connectToServer(InetAddress.getLocalHost(), 55555);
 			client.setNickName("Zak");
-			String message = client.receiveMessage();
+			Object objReceived = client.receiveMessage();
+			String message = null;
+			if (objReceived instanceof String) {
+				message = (String) objReceived;
+			}
 			assertEquals("Nickname:Zak", message);
 		} catch (IOException | ClassNotFoundException e) {
 		}

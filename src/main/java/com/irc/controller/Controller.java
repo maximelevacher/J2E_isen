@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -79,9 +80,17 @@ public class Controller {
 			public void run() {
 				while(_isRunning) {
 					try {
-						String message = client.receiveMessage();
-						if(checkMessageCommand(message)) {
-							view.appendMessageToArea(message);
+						Object objReceived= client.receiveMessage();
+						String message = null;
+						if (objReceived instanceof String) {
+							message = (String) objReceived;
+							if(checkMessageCommand(message)) {
+								view.appendMessageToArea(message);
+							}
+						} else if (objReceived instanceof Vector) {
+							if (((Vector) objReceived).get(0) instanceof String) {
+								view.updateListConnected((Vector<String>) objReceived);
+							}
 						}
 					} catch (IOException | ClassNotFoundException e) {
 						_isRunning = false;

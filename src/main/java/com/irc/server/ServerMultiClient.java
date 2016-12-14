@@ -67,7 +67,7 @@ public class ServerMultiClient {
 	 * Envoie un message à tous les clients connectés
 	 * @param message Le message à envoyer
 	 */
-	public void broadcastMessage(String message) {
+	public void broadcastMessage(Object message) {
 		for (ServerThread t : _tabServerThreads) {
 			t.sendMessage(message);
 		}
@@ -79,7 +79,7 @@ public class ServerMultiClient {
 	 * @param message Le message à envoyer
 	 * @param s Le client à ignorer
 	 */
-	public void broadcastMessage(String message, ServerThread s) {
+	public void broadcastMessage(Object message, ServerThread s) {
 		for (ServerThread t : _tabServerThreads) {
 			if (t.equals(s)) {
 				continue;
