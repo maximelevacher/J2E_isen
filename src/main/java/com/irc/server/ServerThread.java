@@ -139,6 +139,8 @@ public class ServerThread implements Runnable {
 					 } else {
 						 sendMessage("%nickname_taken");
 					 }
+				} else if (clientInput.startsWith("%ping")) {
+					sendMessage("Pong!");
 				} else {
 					logger.info("Envoi d'un broadcast à tous les autres: " + getNickName() + " > " + clientInput);
 					_serverMultiClient.broadcastMessage(getNickName() + " > " + clientInput);
