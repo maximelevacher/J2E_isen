@@ -5,6 +5,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,6 +20,7 @@ import org.apache.log4j.PropertyConfigurator;
 import com.irc.client.ClientSimple;
 import com.irc.ihm.GUI;
 import com.irc.ihm.LoginWindow;
+import com.irc.metier.Message;
 
 /**
  * Cette classe fait le lien entre l'IHM et le client
@@ -31,7 +34,7 @@ public class Controller {
 	private static final String pathServerConfFile = "conf/servers.txt";
 
 	static enum States {
-		START, LOGIN, CONNECTION, CONNECTED
+		START, LOGIN, CONNECTION, CONNECTED, DISCONNECTED, SERVER_PROBLEM
 	}
 	
 	public States state = States.START;
@@ -51,7 +54,7 @@ public class Controller {
 		login = l;
 	}
 	
-	public void startClient() {
+	public boolean startClient() {
 		// Récupère les serveurs depuis le fichier et tente de se connecter à chacun de ceux-ci
 		boolean hasConnected = false;
 		LinkedHashMap<InetAddress, Integer> serveurs = loadServersFromFile(pathServerConfFile);
@@ -70,7 +73,8 @@ public class Controller {
 			} catch (IOException e) {
 				if(!i.hasNext()) {
 					logger.error("N'a pu se connecter à aucun serveur.", e);
-					System.exit(1);
+					//System.exit(1);
+					return false;
 				}
 			}
 		}
@@ -87,9 +91,23 @@ public class Controller {
 							if(checkMessageCommand(message)) {
 								view.appendMessageToArea(message);
 							}
+						} else if (objReceived instanceof Message) {
+							Message msgReceived = (Message) objReceived;
+							DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+							String dateMessage = dateFormat.format(msgReceived.getDate());
+							if (msgReceived.getsReceiver().equals("_everyone")) {
+								view.appendMessageToArea(dateMessage + " | " + msgReceived.getsSender() + " > " + msgReceived.getMessage());
+							} else {
+								view.appendMessageToArea(dateMessage + " | Message Privé de " + msgReceived.getsSender() + " > " + msgReceived.getMessage());
+							}
 						} else if (objReceived instanceof Vector) {
 							if (((Vector) objReceived).get(0) instanceof String) {
 								view.updateListConnected((Vector<String>) objReceived);
+							} else if (((Vector) objReceived).get(0) instanceof Message) {
+								for (Message m : (Vector<Message>) objReceived) {
+									DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+									view.appendMessageToArea(dateFormat.format(m.getDate()) + " | " + m.getsSender() + " > " + m.getMessage());
+								}
 							}
 						}
 					} catch (IOException | ClassNotFoundException e) {
@@ -97,6 +115,7 @@ public class Controller {
 						logger.error("Probleme lors de la réception du message.", e);
 						try {
 							client.disconnectFromServer();
+							setState(Controller.States.DISCONNECTED);
 						} catch (IOException e1) {
 							logger.error("Probleme lors de la deconnexion.", e1);
 						}
@@ -105,6 +124,7 @@ public class Controller {
 			}
 		};
 		threadReceiveMessages.start();
+		return true;
 	}
 	
 	public void stopClient() {
@@ -130,8 +150,11 @@ public class Controller {
 		if (message.equals("%nickname_ok")) {
 			setState(Controller.States.CONNECTION);
 		} else if (message.equals("%nickname_taken")) {
-			login.showError("Le pseudonyme est déjà pris");
-			setState(Controller.States.START);
+			login.showError("Connexion impossible", "Le pseudonyme est déjà pris");
+			_username = null;
+			setState(Controller.States.DISCONNECTED);
+		} else if (message.equals("%privateMessageReceiverOffline")) {
+			login.showError("Message privé annulé", "Impossible d'envoyer un message privé.\nL'utilisateur est déconnecté.");
 		} else {
 			// Si ce n'est pas une commande on affiche le message
 			displayMessage = true;
@@ -180,18 +203,15 @@ public class Controller {
 	}
 	
 	public void onClickOnLoginButton(String username) {
-		_username = username;
-		if(_username == null || _username.isEmpty()) {
-			login.showError("Le pseudonyme ne peut pas être vide.");
+		if(username == null || username.isEmpty()) {
+			login.showError("Connexion impossible", "Le pseudonyme ne peut pas être vide.");
 		} else {
 			try {
-				client.setNickName(get_username());
-			} catch (IOException e) {
+				client.setNickName(username);
+				_username = username;
+			} catch (IOException | NullPointerException e) {
 				logger.error("Impossible de définir le pseudonyme.", e);
-				try {
-					client.disconnectFromServer();
-				} catch (IOException e1) {
-				}
+				setState(States.DISCONNECTED);
 			}
 		}
 	}
@@ -223,25 +243,65 @@ public class Controller {
 
 		viewConnected.addListenener(controller);
 		login.addListenener(controller);
+		
+		int nbRetries = 0;
 
 		while (true) {
 			switch(controller.getState()) {
 				case START:
-					controller.stopClient();
-					controller.startClient();
-					login.setVisible(true);
-					viewConnected.setVisible(false);
-					controller.setState(Controller.States.LOGIN);
+					login.showConnectingBox(true);
+					if(controller.startClient()) {
+						login.setVisible(true);
+						viewConnected.setVisible(false);
+						if (controller.get_username() != null) {
+							controller.setState(Controller.States.CONNECTION);
+							try {
+								client.setNickName(controller.get_username());
+							} catch (IOException e) {
+								controller.setState(Controller.States.DISCONNECTED);
+							}
+						} else {
+							controller.setState(Controller.States.LOGIN);
+						}
+					} else {
+						controller.setState(Controller.States.DISCONNECTED);
+					}
+					login.showConnectingBox(false);
 					break;
 				case LOGIN:
 					break;
 				case CONNECTION:
 					viewConnected.setVisible(true);
 					login.setVisible(false);
+					viewConnected.enableUserEntries(true);
 					controller.setState(Controller.States.CONNECTED);
 					break;
 				case CONNECTED:
+					nbRetries = 0;
 					break;
+				case DISCONNECTED:
+					viewConnected.enableUserEntries(false);
+					nbRetries++;
+					controller.stopClient();
+					viewConnected.appendMessageToArea("Déconnecté du serveur. Reconnexion...");
+					if (nbRetries >= 3) {
+						controller.setState(Controller.States.SERVER_PROBLEM);
+					} else {
+						controller.setState(Controller.States.START);
+					}
+					break;
+				case SERVER_PROBLEM:
+					logger.error("Impossible de se connecter à un serveur après 3 tentatives.");
+					login.showError("Connexion impossible", "Impossible de se connecter à un serveur après 3 tentatives.");
+					// Attendre une action de l'utilisateur sur la reconnexion
+					while(true) {
+						if (viewConnected.isVisible()) {
+							
+						} else {
+							System.exit(1);
+						}
+					}
+					//break;
 			}
 		}
 	}

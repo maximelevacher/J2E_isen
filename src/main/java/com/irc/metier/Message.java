@@ -1,12 +1,15 @@
 package com.irc.metier;
 
+import java.io.Serializable;
 import java.sql.Date;
 
-public class Message {
+public class Message implements Serializable {
 	private int num;
 	private String message;
 	private Personne sender;
 	private Personne emmetter;
+	private String sSender;
+	private String sReceiver;
 	private Date date;
 	
 	public Message() {
@@ -20,6 +23,21 @@ public class Message {
 		this.date =new java.sql.Date(date_util.getTime());
 	}
 
+	public Message(String message, String sender, String receiver) {
+		this.setsSender(sender);
+		this.setsReceiver(receiver);
+		this.setMessage(message);
+		java.util.Date date_util = new java.util.Date();
+		this.date = new java.sql.Date(date_util.getTime());
+	}
+	
+	public Message(String message, String sender, String receiver, Date date) {
+		this.setsSender(sender);
+		this.setsReceiver(receiver);
+		this.setMessage(message);
+		this.setDate(date);
+	}
+	
 	public int getNum() {
 		return num;
 	}
@@ -55,12 +73,23 @@ public class Message {
 	public Date getDate() {
 		return date;
 	}
-
-	public void setDate(Date date) {
-		this.date = date;
+	
+	public String getsSender() {
+		return sSender;
+	}
+	public void setsSender(String sSender) {
+		this.sSender = sSender;
 	}
 	
-	public String toString(){
-		return " "+sender.getNickname()+" > "+getMessage();
+	public String getsReceiver() {
+		return sReceiver;
+	}
+	
+	public void setsReceiver(String sReceiver) {
+		this.sReceiver = sReceiver;
+	}
+	
+	public void setDate(Date date) {
+		this.date = date;
 	}
 }

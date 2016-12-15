@@ -1,8 +1,15 @@
 package com.irc.server;
 
 import java.net.Socket;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
+
+import com.irc.database.Database;
+import com.irc.database.MessageDAO;
+import com.irc.metier.Message;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -140,6 +147,8 @@ public class ServerThread implements Runnable {
 						 setNickName(nickname);
 						 sendMessage("%nickname_ok");
 						 sendMessage("Bienvenue sur le serveur!");
+						 Database db = new Database();
+						 sendMessage(db.findLastTenMessages());
 						 _serverMultiClient.broadcastMessage(nickname + " vient de se connecter.", this);
 						 _serverMultiClient.broadcastMessage(_serverMultiClient.getListOfNicknameConnected());
 					 } else {
@@ -149,9 +158,32 @@ public class ServerThread implements Runnable {
 					sendMessage("Pong!");
 				} else if (clientInput.startsWith("%getListConnected")) {
 					_serverMultiClient.broadcastMessage(_serverMultiClient.getListOfNicknameConnected());
+				} else if (clientInput.startsWith("%privateMessage")) {
+					String privateUsername = clientInput.split(" ", 3)[1];
+					String privateMessage = clientInput.split(" ", 3)[2];
+					DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+					String dateNow = dateFormat.format(new Date());
+					String messageToSend = dateNow + " | " + getNickName() + " > " + privateMessage;
+					logger.info("Envoi d'un message privé à " + privateUsername + ": " + messageToSend);
+					Message objPrivateMessage = new Message(privateMessage, getNickName(), privateUsername);
+					if (_serverMultiClient.sendPrivateMessage(objPrivateMessage, privateUsername)) {
+						logger.info("Message privé envoyé.");
+					} else {
+						logger.info("Message privé raté. Le receiver est offline.");
+						sendMessage("%privateMessageReceiverOffline");
+					}
+					
 				} else {
-					logger.info("Envoi d'un broadcast à tous les autres: " + getNickName() + " > " + clientInput);
-					_serverMultiClient.broadcastMessage(getNickName() + " > " + clientInput);
+					DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+					String dateNow = dateFormat.format(new Date());
+					String messageToSend = dateNow + " | " + getNickName() + " > " + clientInput;
+					Message objMessage = new Message(clientInput, getNickName(), "_everyone");
+					logger.info("Envoi d'un broadcast à tous les autres: " + messageToSend);
+					_serverMultiClient.broadcastMessage(objMessage);
+					logger.info("Enregistrement du message dans la bdd");
+					MessageDAO messageDAO = new MessageDAO();
+					messageDAO.create(objMessage);
+					logger.info("Message enregistré.");
 				}
 			}
 		}

@@ -25,6 +25,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JMenu;
 import java.awt.Panel;
@@ -60,6 +61,8 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 	JTextArea textAreaSendMessage= null;
 	JButton sendButton = null;
 	JList<String> listConnected = null;
+	JMenuItem menuItemReconnect = null;
+	
 	public GUI() {
 		setTitle("ChatDent");
 		setSize(900, 700);
@@ -89,6 +92,7 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		espaceSendMessage.setLayout(new BorderLayout(0, 0));
 		espaceSendMessage.add(sendMessage(), BorderLayout.SOUTH);
 		setVisible(false);
+		setLocationRelativeTo(null);
 	}
 
 	public static void main(String[] args) {
@@ -115,6 +119,7 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		textAreaSendMessage.setRows(5);
 		textAreaSendMessage.setBorder(border);
 		textAreaSendMessage.setLineWrap(true);
+		textAreaSendMessage.setDisabledTextColor(Color.GRAY);
 		textAreaSendMessage.addKeyListener(sendEnterButtonListener);
 
 		sendButton = new JButton("Send");
@@ -132,11 +137,9 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		JMenu mnFichier = new JMenu("Fichier");
 		menuBar.add(mnFichier);
 
-		JMenuBar menuBar_1 = new JMenuBar();
-		mnFichier.add(menuBar_1);
+		menuItemReconnect = new JMenuItem("Se Reconnecter");
+		mnFichier.add(menuItemReconnect);
 
-		JMenu mnTest = new JMenu("Quit");
-		menuBar_1.add(mnTest);
 		return menuBar;
 	}
 
@@ -157,6 +160,23 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		DefaultCaret caret = (DefaultCaret)textAreaReceiveMessage.getCaret();
 		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 		return textAreaReceiveMessage;
+	}
+	
+	/**
+	 * Active ou désactive les entrées utilisateur si le serveur est déconnecté.
+	 * @param b
+	 */
+	public void enableUserEntries(boolean b) {
+		textAreaSendMessage.setEditable(b);
+		sendButton.setEnabled(b);
+		listConnected.setEnabled(b);
+		if (b) {
+			textAreaSendMessage.setBackground(Color.WHITE);
+		} else {
+			textAreaSendMessage.setBackground(Color.LIGHT_GRAY);
+		}
+		// Si on désactive les entrées, on autorise la possibilté de se reconnecter
+		menuItemReconnect.setEnabled(!b);
 	}
 
 	@Override

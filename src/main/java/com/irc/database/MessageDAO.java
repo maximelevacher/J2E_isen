@@ -42,12 +42,11 @@ public class MessageDAO extends DAO<Message>{
 			e.printStackTrace();
 		}
 	      
-	      String sql = "INSERT INTO message(ME_sender,ME_emeteur,ME_text,ME_type)" +
-	                   "VALUES ('"+obj.getSender().getId()+"', "+obj.getEmmetter().getId()+",'"+obj.getMessage()+"','text')";
+	      String sql = "INSERT INTO message(ME_sSender,ME_sReceiver,ME_text,ME_type)" +
+	                   "VALUES ('"+obj.getsSender()+"', '"+obj.getsReceiver()+"','"+obj.getMessage()+"','text')";
 	      try {
 			stmt.executeUpdate(sql);
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
