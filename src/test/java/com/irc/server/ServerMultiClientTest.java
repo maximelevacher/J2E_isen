@@ -171,7 +171,7 @@ public class ServerMultiClientTest {
 					out.writeObject("%ping");
 					// Et on tente de lire une réponse du serveur.
 					// Si elle renvoie null, le serveur a fermé la connexion
-					Thread.sleep(1000);
+					Thread.sleep(1500);
 					if(in.readObject() == null) {
 						throw new Exception("Client n'a pas pu se connecter");
 					}
