@@ -24,6 +24,13 @@ import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
 
+import com.irc.client.ClientSimple;
+import com.irc.ihm.GUI;
+import com.irc.ihm.LoginWindow;
+import com.irc.controller.Controller;
+import com.irc.database.MessageDAO;
+import com.irc.metier.Message;
+
 public class ServerMultiClientTest {
 
 	@Test
@@ -129,6 +136,25 @@ public class ServerMultiClientTest {
 			}
 		}
 	}
+	
+	@Test
+	public void testenvoie500msg() {
+		// On lance le serveur
+		final ServerMultiClient server = new ServerMultiClient();
+		startServer(server);
+
+		try {
+			// On envoie 500 messages
+			testSendNMessage(500);
+		} catch (Exception e) {
+		} finally {
+			try {
+				server.shutdownServer();
+			} catch (IOException e) {
+			}
+		}
+	}
+
 
 	/**
 	 * Lance un serveur déjà instancié et attends qu'il soit bien lancé.
@@ -206,5 +232,49 @@ public class ServerMultiClientTest {
 		// On compare les deux listes
 		assertEquals(expectedList, resultList);
 	}
+	
+	
+	/**
+	 * Envoie des n messages
+	 */
+	private void testSendNMessage(int n) {
+		
+		int i;
+		ClientSimple client = new ClientSimple();
+		try {
+			client.connectToServer(InetAddress.getLocalHost(), 55555);
+			for(i=0;i<n;i++){
+					
+				client.sendMessage("Bonjour" + i);
+			}
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+			}
+		} catch (IOException e) {
+		}
+	}
+	
+	/**
+	public void sendMessageTest() throws InterruptedException, IOException {
+		ClientSimple clientTest1 = new ClientSimple();
+		GUI viewConnectedTest1 = new GUI();
+		LoginWindow loginTest1 = new LoginWindow();
+		
+		Controller clientTestIHM = new Controller (clientTest1, viewConnectedTest1, loginTest1 );
+		
+		clientTestIHM.startClient();
+		clientTestIHM.onClickOnLoginButton("Testeur1");
+		Message msg = new Message();
+		
+		for(int i=0; i<500; i++)
+		{
+			clientTest1.sendMessage("Salut" + i);
+			Thread.sleep(250);
+		}
+		while(true);
+	}*/
+	
+	
 
 }
