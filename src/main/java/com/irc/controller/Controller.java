@@ -31,7 +31,7 @@ public class Controller {
 	private static final String pathServerConfFile = "conf/servers.txt";
 
 	static enum States {
-		START, LOGIN, CONNECTION, CONNECTED
+		START, LOGIN, CONNECTION, CONNECTED, DISCONNECTED, SERVER_PROBLEM
 	}
 	
 	public States state = States.START;
@@ -51,7 +51,7 @@ public class Controller {
 		login = l;
 	}
 	
-	public void startClient() {
+	public boolean startClient() {
 		// Récupère les serveurs depuis le fichier et tente de se connecter à chacun de ceux-ci
 		boolean hasConnected = false;
 		LinkedHashMap<InetAddress, Integer> serveurs = loadServersFromFile(pathServerConfFile);
@@ -70,7 +70,8 @@ public class Controller {
 			} catch (IOException e) {
 				if(!i.hasNext()) {
 					logger.error("N'a pu se connecter à aucun serveur.", e);
-					System.exit(1);
+					//System.exit(1);
+					return false;
 				}
 			}
 		}
@@ -97,6 +98,7 @@ public class Controller {
 						logger.error("Probleme lors de la réception du message.", e);
 						try {
 							client.disconnectFromServer();
+							setState(Controller.States.DISCONNECTED);
 						} catch (IOException e1) {
 							logger.error("Probleme lors de la deconnexion.", e1);
 						}
@@ -105,6 +107,7 @@ public class Controller {
 			}
 		};
 		threadReceiveMessages.start();
+		return true;
 	}
 	
 	public void stopClient() {
@@ -131,7 +134,8 @@ public class Controller {
 			setState(Controller.States.CONNECTION);
 		} else if (message.equals("%nickname_taken")) {
 			login.showError("Le pseudonyme est déjà pris");
-			setState(Controller.States.START);
+			_username = null;
+			setState(Controller.States.DISCONNECTED);
 		} else {
 			// Si ce n'est pas une commande on affiche le message
 			displayMessage = true;
@@ -180,18 +184,15 @@ public class Controller {
 	}
 	
 	public void onClickOnLoginButton(String username) {
-		_username = username;
-		if(_username == null || _username.isEmpty()) {
+		if(username == null || username.isEmpty()) {
 			login.showError("Le pseudonyme ne peut pas être vide.");
 		} else {
 			try {
-				client.setNickName(get_username());
-			} catch (IOException e) {
+				client.setNickName(username);
+				_username = username;
+			} catch (IOException | NullPointerException e) {
 				logger.error("Impossible de définir le pseudonyme.", e);
-				try {
-					client.disconnectFromServer();
-				} catch (IOException e1) {
-				}
+				setState(States.DISCONNECTED);
 			}
 		}
 	}
@@ -223,25 +224,65 @@ public class Controller {
 
 		viewConnected.addListenener(controller);
 		login.addListenener(controller);
+		
+		int nbRetries = 0;
 
 		while (true) {
 			switch(controller.getState()) {
 				case START:
-					controller.stopClient();
-					controller.startClient();
-					login.setVisible(true);
-					viewConnected.setVisible(false);
-					controller.setState(Controller.States.LOGIN);
+					login.showConnectingBox(true);
+					if(controller.startClient()) {
+						login.setVisible(true);
+						viewConnected.setVisible(false);
+						if (controller.get_username() != null) {
+							controller.setState(Controller.States.CONNECTION);
+							try {
+								client.setNickName(controller.get_username());
+							} catch (IOException e) {
+								controller.setState(Controller.States.DISCONNECTED);
+							}
+						} else {
+							controller.setState(Controller.States.LOGIN);
+						}
+					} else {
+						controller.setState(Controller.States.DISCONNECTED);
+					}
+					login.showConnectingBox(false);
 					break;
 				case LOGIN:
 					break;
 				case CONNECTION:
 					viewConnected.setVisible(true);
 					login.setVisible(false);
+					viewConnected.enableUserEntries(true);
 					controller.setState(Controller.States.CONNECTED);
 					break;
 				case CONNECTED:
+					nbRetries = 0;
 					break;
+				case DISCONNECTED:
+					viewConnected.enableUserEntries(false);
+					nbRetries++;
+					controller.stopClient();
+					viewConnected.appendMessageToArea("Déconnecté du serveur. Reconnexion...");
+					if (nbRetries >= 3) {
+						controller.setState(Controller.States.SERVER_PROBLEM);
+					} else {
+						controller.setState(Controller.States.START);
+					}
+					break;
+				case SERVER_PROBLEM:
+					logger.error("Impossible de se connecter à un serveur après 3 tentatives.");
+					login.showError("Impossible de se connecter à un serveur après 3 tentatives.");
+					// Attendre une action de l'utilisateur sur la reconnexion
+					while(true) {
+						if (viewConnected.isVisible()) {
+							
+						} else {
+							System.exit(1);
+						}
+					}
+					//break;
 			}
 		}
 	}

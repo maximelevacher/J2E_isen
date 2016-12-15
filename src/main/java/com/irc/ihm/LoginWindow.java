@@ -5,6 +5,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -16,7 +17,9 @@ import com.irc.controller.Controller;
 public class LoginWindow extends JFrame {
 	private Controller controller;
 	private JTextField userText;
-
+	JOptionPane optionPaneConnecting = null;
+	JDialog dialogConnecting = null;
+	
 	public LoginWindow() {
 		setTitle("Login ChatDent");
 		setSize(300, 125);
@@ -56,6 +59,16 @@ public class LoginWindow extends JFrame {
 
 	public void showError(String message) {
 		JOptionPane.showMessageDialog(this, message, "Connexion impossible", JOptionPane.ERROR_MESSAGE);
+	}
+	
+	public void showConnectingBox(boolean show) {
+		if (optionPaneConnecting == null) {
+			optionPaneConnecting = new JOptionPane("Connexion au serveur...", JOptionPane.INFORMATION_MESSAGE);
+			dialogConnecting = optionPaneConnecting.createDialog(this, "Connexion...");
+			dialogConnecting.setModal(false);
+		}
+		optionPaneConnecting.setVisible(show);
+		dialogConnecting.setVisible(show);
 	}
 
 	public void addListenener(Controller c) {
