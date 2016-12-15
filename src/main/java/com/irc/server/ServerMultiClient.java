@@ -36,7 +36,7 @@ public class ServerMultiClient {
 	public void startServer() {
 		logger.info("Lance le serveur sur le port: " + DEFAULT_PORT);
 		try {
-			serverSocket = new ServerSocket(DEFAULT_PORT);
+			serverSocket = new ServerSocket(DEFAULT_PORT, CONNECTIONS_LIMIT);
 			serverSocket.setReuseAddress(true);
 		} catch (IOException e) {
 			throw new RuntimeException(e);

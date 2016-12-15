@@ -37,6 +37,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -56,9 +58,19 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 	static final String logConfigPath = "conf/log4j.properties";
 	
 	private Controller controller;
+	
+	private class TabPanelMessageArea {
+		JPanel panel;
+		JTextArea textAreaMessages;
+		TabPanelMessageArea(JPanel p, JTextArea t) {
+			panel = p;
+			textAreaMessages = t;
+		}
+	}
+	
+	Map<String, TabPanelMessageArea> mapTextAreaReceiveMessage = new HashMap<String, TabPanelMessageArea>();
 	JTabbedPane messageArea = null;
-	JTextArea textAreaReceiveMessage = null;
-	JTextArea textAreaSendMessage= null;
+	JTextArea textAreaSendMessage = null;
 	JButton sendButton = null;
 	JList<String> listConnected = null;
 	JMenuItem menuItemReconnect = null;
@@ -81,7 +93,7 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		messageArea = new JTabbedPane(JTabbedPane.TOP);
 		messageArea.addChangeListener(this);
 		messageConnected.setLeftComponent(messageArea);
-		addPanelTab(messageArea, "General");
+		getTabOfUser("_General");
 		// Liste des personnes connecté
 		listConnected = new JList<String>();
 		messageConnected.setRightComponent(listConnected);
@@ -106,6 +118,16 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 	
 	public void updateListConnected(Vector<String> v) {
 		listConnected.setListData(v);
+		/* Inutile ... à voir
+		// On prend toutes les tabs et on les désactive, sauf le general (premier index)
+		for (int i = 1; i < messageArea.getTabCount(); i ++) {
+			setEnableTabOfUser(messageArea.getTitleAt(i), false);
+		}
+		// Active ceux qui sont connectés
+		for (String s : v) {
+			setEnableTabOfUser(s, true);
+		}
+		*/
 	}
 
 	protected JPanel sendMessage() {
@@ -143,17 +165,49 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		return menuBar;
 	}
 
-	protected JTabbedPane addPanelTab(JTabbedPane messageArea, String nomClient) {
+	protected void getTabOfUser(String nomClient) {
+		if (mapTextAreaReceiveMessage.containsKey(nomClient)) {
+			return;
+		}
 		JPanel panel = new JPanel();
+		JTextArea textArea = addMessageList();
+		String nameDisplay = nomClient;
+		
 		panel.setLayout(new GridLayout());
-		JScrollPane sp = new JScrollPane(addMessageList());
+		JScrollPane sp = new JScrollPane(textArea);
 		panel.add(sp);
-		messageArea.addTab(nomClient, null, panel, null);
-		return messageArea;
+		
+		TabPanelMessageArea tPaneMsgArea = new TabPanelMessageArea(panel, textArea);
+		
+		if (nomClient.equals("_General")) {
+			nameDisplay = "General";
+		}
+		
+		mapTextAreaReceiveMessage.put(nomClient, tPaneMsgArea);
+		messageArea.addTab(nameDisplay, null, panel, null);
+	}
+	
+	private void focusTabOfUser(String username) {
+		getTabOfUser(username);
+		for (int i = 0; i < messageArea.getTabCount(); i++) {
+			if (messageArea.getTitleAt(i).equals(username)) {
+				messageArea.setSelectedIndex(i);
+				break;
+			}
+		}
+	}
+	
+	public void setEnableTabOfUser(String username, boolean b) {
+		for (int i = 0; i < messageArea.getTabCount(); i++) {
+			if (messageArea.getTitleAt(i).equals(username)) {
+				messageArea.setEnabledAt(i, b);
+				break;
+			}
+		}
 	}
 
 	protected JTextArea addMessageList() {
-		textAreaReceiveMessage = new JTextArea();
+		JTextArea textAreaReceiveMessage = new JTextArea();
 		textAreaReceiveMessage.setText("");
 		textAreaReceiveMessage.setLineWrap(true);
 		textAreaReceiveMessage.setEditable(false);
@@ -212,9 +266,14 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 	
 	private void sendMessageAndEmptyTextField() {
 		if(textAreaSendMessage.getText().length() != 0) {
-			logger.info("Appui ou clic sur envoi. Message: " + textAreaSendMessage.getText());
-			controller.onClickOnSendMessage(textAreaSendMessage.getText());
+			String receiver = messageArea.getTitleAt(messageArea.getSelectedIndex());
+			if (receiver.equals("General")) {
+				controller.onClickOnSendMessage(textAreaSendMessage.getText());
+			} else {
+				controller.onClickOnSendMessage(textAreaSendMessage.getText(), receiver);
+			}
 			textAreaSendMessage.setText("");
+			logger.info("Appui ou clic sur envoi. Message à " + receiver + ": " + textAreaSendMessage.getText());
 		}
 	}
 
@@ -240,7 +299,7 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 				if (index >= 0) {
 					Object o = theList.getModel().getElementAt(index);
 					// System.out.println("Double-clicked on: " + o.toString());
-					addPanelTab(messageArea, o.toString());
+					focusTabOfUser(o.toString());
 				}
 			}
 		}
@@ -255,8 +314,15 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 
 	}
 
-	public void appendMessageToArea(String message) {
-		 textAreaReceiveMessage.setText(textAreaReceiveMessage.getText() + message + System.lineSeparator());
+	public void appendMessageToUserTab(String message) {
+		JTextArea t = mapTextAreaReceiveMessage.get("_General").textAreaMessages;
+		t.setText(t.getText() + message + System.lineSeparator());
+	}
+	
+	public void appendMessageToUserTab(String message, String username) {
+		getTabOfUser(username);
+		JTextArea t = mapTextAreaReceiveMessage.get(username).textAreaMessages;
+		t.setText(t.getText() + message + System.lineSeparator());
 	}
 
 	@Override

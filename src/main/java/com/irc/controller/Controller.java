@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -86,27 +87,33 @@ public class Controller {
 					try {
 						Object objReceived= client.receiveMessage();
 						String message = null;
+						// Si on recoit une commande du serveur
 						if (objReceived instanceof String) {
 							message = (String) objReceived;
 							if(checkMessageCommand(message)) {
-								view.appendMessageToArea(message);
+								view.appendMessageToUserTab(message);
 							}
+						// Si on recoit un message
 						} else if (objReceived instanceof Message) {
 							Message msgReceived = (Message) objReceived;
 							DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 							String dateMessage = dateFormat.format(msgReceived.getDate());
+							String messageToDisplay = dateMessage + " | " + msgReceived.getsSender() + " > " + msgReceived.getMessage();
 							if (msgReceived.getsReceiver().equals("_everyone")) {
-								view.appendMessageToArea(dateMessage + " | " + msgReceived.getsSender() + " > " + msgReceived.getMessage());
+								view.appendMessageToUserTab(messageToDisplay);
 							} else {
-								view.appendMessageToArea(dateMessage + " | Message Privé de " + msgReceived.getsSender() + " > " + msgReceived.getMessage());
+								view.appendMessageToUserTab(messageToDisplay, msgReceived.getsSender());
 							}
+						// Si on recoit une liste
 						} else if (objReceived instanceof Vector) {
+							// Si on recoit une liste de personnes connectées
 							if (((Vector) objReceived).get(0) instanceof String) {
 								view.updateListConnected((Vector<String>) objReceived);
+							// Si on recoit une liste de messages
 							} else if (((Vector) objReceived).get(0) instanceof Message) {
 								for (Message m : (Vector<Message>) objReceived) {
 									DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-									view.appendMessageToArea(dateFormat.format(m.getDate()) + " | " + m.getsSender() + " > " + m.getMessage());
+									view.appendMessageToUserTab(dateFormat.format(m.getDate()) + " | " + m.getsSender() + " > " + m.getMessage());
 								}
 							}
 						}
@@ -174,6 +181,22 @@ public class Controller {
 		}
 	}
 	
+	public void onClickOnSendMessage(String message, String username) {
+		try {
+			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+			String dateMessage = dateFormat.format(new Date());
+			String messageToDisplay = dateMessage + " | " + get_username() + " > " + message;
+			view.appendMessageToUserTab(messageToDisplay, username);
+			client.sendMessage("%privateMessage " + username + " " + message);
+		} catch (IOException e) {
+			logger.error("Impossible d'envoyer un message.", e);
+			try {
+				client.disconnectFromServer();
+			} catch (IOException e1) {
+			}
+		}
+	}
+	
 	/**
 	 * Retourne la liste des serveurs contenus dans le fichier donné en paramètre
 	 * @param path Le fichier à lire
@@ -205,6 +228,8 @@ public class Controller {
 	public void onClickOnLoginButton(String username) {
 		if(username == null || username.isEmpty()) {
 			login.showError("Connexion impossible", "Le pseudonyme ne peut pas être vide.");
+		} else if (username.startsWith("_")) {
+			login.showError("Connexion impossible", "Le pseudonyme ne peut pas commencer par un '_'");
 		} else {
 			try {
 				client.setNickName(username);
@@ -283,7 +308,7 @@ public class Controller {
 					viewConnected.enableUserEntries(false);
 					nbRetries++;
 					controller.stopClient();
-					viewConnected.appendMessageToArea("Déconnecté du serveur. Reconnexion...");
+					viewConnected.appendMessageToUserTab("Déconnecté du serveur. Reconnexion...");
 					if (nbRetries >= 3) {
 						controller.setState(Controller.States.SERVER_PROBLEM);
 					} else {
