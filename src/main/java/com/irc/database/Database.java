@@ -1,11 +1,14 @@
 package com.irc.database;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
 import java.sql.*;
 
+import com.irc.metier.Message;
 import com.mysql.jdbc.Connection;
 import com.mysql.jdbc.Statement;
 
@@ -18,7 +21,7 @@ public class Database {
 	
 	// JDBC driver name and database URL
 	static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-	static final String DB_URL = "jdbc:mysql://89.89.15.87:150/irc";
+	static final String DB_URL = "jdbc:mysql://localhost/irc";
 	static Connection conn = null;
 	Statement stmt = null;
 	// Database credentials
@@ -123,5 +126,30 @@ public class Database {
 			listMessages.add(message);
 		}
 		return listMessages;
+	}
+	
+	/**
+	 * Récupère les 10 derniers messages envoyés dans le canal général
+	 * @return les 10 derniers messages généraux
+	 * @throws SQLException 
+	 */
+	public Vector<Message> findLastTenMessages() {
+		Vector<Message> messages = new Vector<Message>();
+		String sql = "SELECT * FROM message WHERE ME_sReceiver = '_everyone' ORDER BY ME_id DESC LIMIT 10";
+		
+		try {
+			conn = Database.getInstance();
+			stmt = (Statement) conn.createStatement();
+			ResultSet rs = stmt.executeQuery(sql);
+			while (rs.next()) {
+				Date date = new Date(rs.getTimestamp("ME_lastmodif").getTime());
+				messages.add(new Message(rs.getString("ME_text"), rs.getString("ME_sSender"), rs.getString("ME_sReceiver"), date));
+			}
+			Collections.reverse(messages);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return messages;
 	}
 }

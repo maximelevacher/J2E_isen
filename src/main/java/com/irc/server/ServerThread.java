@@ -1,8 +1,15 @@
 package com.irc.server;
 
 import java.net.Socket;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
+
+import com.irc.database.Database;
+import com.irc.database.MessageDAO;
+import com.irc.metier.Message;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -140,6 +147,8 @@ public class ServerThread implements Runnable {
 						 setNickName(nickname);
 						 sendMessage("%nickname_ok");
 						 sendMessage("Bienvenue sur le serveur!");
+						 Database db = new Database();
+						 sendMessage(db.findLastTenMessages());
 						 _serverMultiClient.broadcastMessage(nickname + " vient de se connecter.", this);
 						 _serverMultiClient.broadcastMessage(_serverMultiClient.getListOfNicknameConnected());
 					 } else {
@@ -150,8 +159,14 @@ public class ServerThread implements Runnable {
 				} else if (clientInput.startsWith("%getListConnected")) {
 					_serverMultiClient.broadcastMessage(_serverMultiClient.getListOfNicknameConnected());
 				} else {
-					logger.info("Envoi d'un broadcast à tous les autres: " + getNickName() + " > " + clientInput);
-					_serverMultiClient.broadcastMessage(getNickName() + " > " + clientInput);
+					DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+					String dateNow = dateFormat.format(new Date());
+					logger.info("Envoi d'un broadcast à tous les autres: " + dateNow + " | " + getNickName() + " > " + clientInput);
+					_serverMultiClient.broadcastMessage(dateNow + " | " + getNickName() + " > " + clientInput);
+					logger.info("Enregistrement du message dans la bdd");
+					MessageDAO messageDAO = new MessageDAO();
+					messageDAO.create(new Message(clientInput, getNickName(), "_everyone"));
+					logger.info("Message enregistré.");
 				}
 			}
 		}

@@ -5,6 +5,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,6 +20,7 @@ import org.apache.log4j.PropertyConfigurator;
 import com.irc.client.ClientSimple;
 import com.irc.ihm.GUI;
 import com.irc.ihm.LoginWindow;
+import com.irc.metier.Message;
 
 /**
  * Cette classe fait le lien entre l'IHM et le client
@@ -91,6 +94,11 @@ public class Controller {
 						} else if (objReceived instanceof Vector) {
 							if (((Vector) objReceived).get(0) instanceof String) {
 								view.updateListConnected((Vector<String>) objReceived);
+							} else if (((Vector) objReceived).get(0) instanceof Message) {
+								for (Message m : (Vector<Message>)objReceived) {
+									DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+									view.appendMessageToArea(dateFormat.format(m.getDate()) + " | " + m.getsSender() + " > " + m.getMessage());
+								}
 							}
 						}
 					} catch (IOException | ClassNotFoundException e) {
