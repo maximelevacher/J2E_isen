@@ -88,6 +88,16 @@ public class ServerMultiClient {
 		}
 		logger.info("Envoi d'un broadcast sauf à " + s.getNickName() + ": " + message);
 	}
+	
+	public boolean sendPrivateMessage(Object message, String username) {
+		for (ServerThread t : _tabServerThreads) {
+			if (t.getNickName().equals(username)) {
+				t.sendMessage(message);
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * Supprime un client de la liste des clients connectés

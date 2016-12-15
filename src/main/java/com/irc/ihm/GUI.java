@@ -92,6 +92,7 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 		espaceSendMessage.setLayout(new BorderLayout(0, 0));
 		espaceSendMessage.add(sendMessage(), BorderLayout.SOUTH);
 		setVisible(false);
+		setLocationRelativeTo(null);
 	}
 
 	public static void main(String[] args) {

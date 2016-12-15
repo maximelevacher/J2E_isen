@@ -10,12 +10,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
 
-import com.restfb.DefaultFacebookClient;
-import com.restfb.FacebookClient;
-import com.restfb.types.User;
 
 public class Facebook implements MouseListener {
 	private static final String MY_APP_SECRET = "1000dc0449cfcaa1224efff069a6d759";
@@ -26,10 +21,10 @@ public class Facebook implements MouseListener {
 	static JLabel messageLabel = null;
 
 	public static void main(String[] args) {
-		initFrame();
+		//initFrame();
 
 	}
-
+/*
 	public static void initFrame() {
 		mainFrame = new JFrame("Authentification");
 		mainFrame.setSize(800, 600);
@@ -77,7 +72,7 @@ public class Facebook implements MouseListener {
 		mainFrame.setVisible(true);
 		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
-
+*/
 
 	@Override
 	public void mouseClicked(MouseEvent e) {

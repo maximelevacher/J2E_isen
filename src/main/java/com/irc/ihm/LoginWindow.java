@@ -57,8 +57,8 @@ public class LoginWindow extends JFrame {
 		}
 	};
 
-	public void showError(String message) {
-		JOptionPane.showMessageDialog(this, message, "Connexion impossible", JOptionPane.ERROR_MESSAGE);
+	public void showError(String title, String message) {
+		JOptionPane.showMessageDialog(this, message, title, JOptionPane.ERROR_MESSAGE);
 	}
 	
 	public void showConnectingBox(boolean show) {

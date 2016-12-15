@@ -158,14 +158,31 @@ public class ServerThread implements Runnable {
 					sendMessage("Pong!");
 				} else if (clientInput.startsWith("%getListConnected")) {
 					_serverMultiClient.broadcastMessage(_serverMultiClient.getListOfNicknameConnected());
+				} else if (clientInput.startsWith("%privateMessage")) {
+					String privateUsername = clientInput.split(" ", 3)[1];
+					String privateMessage = clientInput.split(" ", 3)[2];
+					DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+					String dateNow = dateFormat.format(new Date());
+					String messageToSend = dateNow + " | " + getNickName() + " > " + privateMessage;
+					logger.info("Envoi d'un message privé à " + privateUsername + ": " + messageToSend);
+					Message objPrivateMessage = new Message(privateMessage, getNickName(), privateUsername);
+					if (_serverMultiClient.sendPrivateMessage(objPrivateMessage, privateUsername)) {
+						logger.info("Message privé envoyé.");
+					} else {
+						logger.info("Message privé raté. Le receiver est offline.");
+						sendMessage("%privateMessageReceiverOffline");
+					}
+					
 				} else {
 					DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 					String dateNow = dateFormat.format(new Date());
-					logger.info("Envoi d'un broadcast à tous les autres: " + dateNow + " | " + getNickName() + " > " + clientInput);
-					_serverMultiClient.broadcastMessage(dateNow + " | " + getNickName() + " > " + clientInput);
+					String messageToSend = dateNow + " | " + getNickName() + " > " + clientInput;
+					Message objMessage = new Message(clientInput, getNickName(), "_everyone");
+					logger.info("Envoi d'un broadcast à tous les autres: " + messageToSend);
+					_serverMultiClient.broadcastMessage(objMessage);
 					logger.info("Enregistrement du message dans la bdd");
 					MessageDAO messageDAO = new MessageDAO();
-					messageDAO.create(new Message(clientInput, getNickName(), "_everyone"));
+					messageDAO.create(objMessage);
 					logger.info("Message enregistré.");
 				}
 			}

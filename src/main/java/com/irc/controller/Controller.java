@@ -91,11 +91,20 @@ public class Controller {
 							if(checkMessageCommand(message)) {
 								view.appendMessageToArea(message);
 							}
+						} else if (objReceived instanceof Message) {
+							Message msgReceived = (Message) objReceived;
+							DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+							String dateMessage = dateFormat.format(msgReceived.getDate());
+							if (msgReceived.getsReceiver().equals("_everyone")) {
+								view.appendMessageToArea(dateMessage + " | " + msgReceived.getsSender() + " > " + msgReceived.getMessage());
+							} else {
+								view.appendMessageToArea(dateMessage + " | Message Privé de " + msgReceived.getsSender() + " > " + msgReceived.getMessage());
+							}
 						} else if (objReceived instanceof Vector) {
 							if (((Vector) objReceived).get(0) instanceof String) {
 								view.updateListConnected((Vector<String>) objReceived);
 							} else if (((Vector) objReceived).get(0) instanceof Message) {
-								for (Message m : (Vector<Message>)objReceived) {
+								for (Message m : (Vector<Message>) objReceived) {
 									DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 									view.appendMessageToArea(dateFormat.format(m.getDate()) + " | " + m.getsSender() + " > " + m.getMessage());
 								}
@@ -141,9 +150,11 @@ public class Controller {
 		if (message.equals("%nickname_ok")) {
 			setState(Controller.States.CONNECTION);
 		} else if (message.equals("%nickname_taken")) {
-			login.showError("Le pseudonyme est déjà pris");
+			login.showError("Connexion impossible", "Le pseudonyme est déjà pris");
 			_username = null;
 			setState(Controller.States.DISCONNECTED);
+		} else if (message.equals("%privateMessageReceiverOffline")) {
+			login.showError("Message privé annulé", "Impossible d'envoyer un message privé.\nL'utilisateur est déconnecté.");
 		} else {
 			// Si ce n'est pas une commande on affiche le message
 			displayMessage = true;
@@ -193,7 +204,7 @@ public class Controller {
 	
 	public void onClickOnLoginButton(String username) {
 		if(username == null || username.isEmpty()) {
-			login.showError("Le pseudonyme ne peut pas être vide.");
+			login.showError("Connexion impossible", "Le pseudonyme ne peut pas être vide.");
 		} else {
 			try {
 				client.setNickName(username);
@@ -281,7 +292,7 @@ public class Controller {
 					break;
 				case SERVER_PROBLEM:
 					logger.error("Impossible de se connecter à un serveur après 3 tentatives.");
-					login.showError("Impossible de se connecter à un serveur après 3 tentatives.");
+					login.showError("Connexion impossible", "Impossible de se connecter à un serveur après 3 tentatives.");
 					// Attendre une action de l'utilisateur sur la reconnexion
 					while(true) {
 						if (viewConnected.isVisible()) {
