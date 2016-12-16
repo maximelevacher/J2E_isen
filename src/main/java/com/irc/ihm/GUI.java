@@ -23,6 +23,7 @@ import java.awt.GridLayout;
 import java.awt.BorderLayout;
 import javax.swing.JSplitPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -44,6 +45,7 @@ import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 
 /**
  * Cette classe implémente une interface graphique pour un client de chat
@@ -294,7 +296,7 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 	MouseListener mouseListener = new MouseAdapter() {
 		public void mouseClicked(MouseEvent mouseEvent) {
 			JList theList = (JList) mouseEvent.getSource();
-			if (mouseEvent.getClickCount() == 2) {
+			if (mouseEvent.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(mouseEvent)) {
 				int index = theList.locationToIndex(mouseEvent.getPoint());
 				if (index >= 0) {
 					Object o = theList.getModel().getElementAt(index);
@@ -302,8 +304,35 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 					focusTabOfUser(o.toString());
 				}
 			}
+			if (SwingUtilities.isRightMouseButton(mouseEvent)) {
+				if (controller.isClientAdmin()) {
+					int index = theList.locationToIndex(mouseEvent.getPoint());
+					if (index >= 0) {
+						Object o = theList.getModel().getElementAt(index);
+						theList.setSelectedIndex(index);
+						getAdminPopupMenu(o.toString()).show(mouseEvent.getComponent(), mouseEvent.getX(), mouseEvent.getY());
+						logger.info("L'Admin a clic droit sur un utilisateur.");
+					}
+				}
+			}
+
 		}
 	};
+
+	private JPopupMenu getAdminPopupMenu(String username) {
+		JPopupMenu menu = new JPopupMenu("Popup Admin");
+		JMenuItem itemKick = new JMenuItem("Kick");
+		JMenuItem itemBan = new JMenuItem("Ban");
+		menu.add(itemKick);
+		menu.add(itemBan);
+		itemKick.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				controller.askForKickUser(username);
+				logger.info("L'Admin a demandé un kick sur: " + username);
+			}
+		});
+		return menu;
+	}
 
 	@Override
 	public void stateChanged(ChangeEvent e) {

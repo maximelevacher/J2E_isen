@@ -156,6 +156,15 @@ public class ServerThread implements Runnable {
 					 }
 				} else if (clientInput.startsWith("%ping")) {
 					sendMessage("Pong!");
+				} else if (clientInput.startsWith("%kick")) {
+					String userToKick = clientInput.split(" ")[1];
+					if (_serverMultiClient.kickClientFromServer(userToKick)) {
+						sendMessage("%kick_ok");
+						_serverMultiClient.broadcastMessage(userToKick + " a été kick du serveur.");
+						_serverMultiClient.broadcastMessage(_serverMultiClient.getListOfNicknameConnected());
+					} else {
+						sendMessage("%kick_failed");
+					}
 				} else if (clientInput.startsWith("%getListConnected")) {
 					_serverMultiClient.broadcastMessage(_serverMultiClient.getListOfNicknameConnected());
 				} else if (clientInput.startsWith("%privateMessage")) {
@@ -180,10 +189,14 @@ public class ServerThread implements Runnable {
 					Message objMessage = new Message(clientInput, getNickName(), "_everyone");
 					logger.info("Envoi d'un broadcast à tous les autres: " + messageToSend);
 					_serverMultiClient.broadcastMessage(objMessage);
-					logger.info("Enregistrement du message dans la bdd");
-					MessageDAO messageDAO = new MessageDAO();
-					messageDAO.create(objMessage);
-					logger.info("Message enregistré.");
+					logger.info("Enregistrement du message dans la bdd...");
+					try {
+						MessageDAO messageDAO = new MessageDAO();
+						messageDAO.create(objMessage);
+						logger.info("Message enregistré.");
+					} catch (NullPointerException e) {
+						logger.error("Le message n'a pas pu être enregistré dans la bdd.", e);
+					}
 				}
 			}
 		}

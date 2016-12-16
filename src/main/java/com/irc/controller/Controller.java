@@ -34,8 +34,10 @@ public class Controller {
 	
 	private static final String pathServerConfFile = "conf/servers.txt";
 
+	private static final String adminPassword = "admin";
+
 	static enum States {
-		START, LOGIN, CONNECTION, CONNECTED, DISCONNECTED, SERVER_PROBLEM
+		START, LOGIN, CONNECTION, CONNECTED, DISCONNECTED, SERVER_PROBLEM, KICKED
 	}
 	
 	public States state = States.START;
@@ -118,6 +120,8 @@ public class Controller {
 									}
 								}
 							} catch (ArrayIndexOutOfBoundsException e) {
+								// Envoie un vecteur vide de string pour quand même update la liste des users
+								view.updateListConnected(new Vector<String>());
 								logger.error("Le vector reçu était vide.");
 							}
 						}
@@ -166,6 +170,13 @@ public class Controller {
 			setState(Controller.States.DISCONNECTED);
 		} else if (message.equals("%privateMessageReceiverOffline")) {
 			login.showError("Message privé annulé", "Impossible d'envoyer un message privé.\nL'utilisateur est déconnecté.");
+		} else if (message.equals("%kick_failed")) {
+			login.showError("Kick impossible", "Le kick a echoué.");
+		} else if (message.equals("%kick_ok")) {
+			logger.info("Kick réussi.");
+		} else if (message.equals("%kicked")) {
+			login.showError("Kicked!", "Vous avez été kick!");
+			setState(Controller.States.KICKED);
 		} else {
 			// Si ce n'est pas une commande on affiche le message
 			displayMessage = true;
@@ -229,8 +240,12 @@ public class Controller {
 		return serveurs;
 	}
 	
-	public void onClickOnLoginButton(String username) {
-		if(username == null || username.isEmpty()) {
+	public void onClickOnLoginButton(String username, String password) {
+		if (username.equals("Admin") && !password.equals(adminPassword)) {
+			login.showError("Connexion admin impossible", "Le mot de passe du compte Admin est incorrect.");
+			return;
+		}
+		if (username == null || username.isEmpty()) {
 			login.showError("Connexion impossible", "Le pseudonyme ne peut pas être vide.");
 		} else if (username.startsWith("_")) {
 			login.showError("Connexion impossible", "Le pseudonyme ne peut pas commencer par un '_'");
@@ -248,6 +263,26 @@ public class Controller {
 		}
 	}
 	
+	public void askForKickUser(String username) {
+		try {
+			client.sendMessage("%kick " + username);
+		} catch (IOException e) {
+			logger.error("Impossible d'envoyer un message.", e);
+			try {
+				client.disconnectFromServer();
+			} catch (IOException e1) {
+			}
+		}
+	}
+
+	public boolean isClientAdmin() {
+		if (get_username().equals("Admin")) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	public States getState() {
 		return state;
 	}
@@ -321,6 +356,12 @@ public class Controller {
 					} else {
 						controller.setState(Controller.States.START);
 					}
+					break;
+				case KICKED:
+					viewConnected.enableUserEntries(false);
+					controller.stopClient();
+					viewConnected.appendMessageToUserTab("Vous avez été kick!");
+					controller.setState(Controller.States.SERVER_PROBLEM);
 					break;
 				case SERVER_PROBLEM:
 					logger.error("Impossible de se connecter à un serveur après 3 tentatives.");
