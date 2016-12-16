@@ -18,6 +18,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.irc.controller.Controller;
@@ -251,7 +252,7 @@ public class ClientSimpleTest {
 		}
 	}
 	
-	@Test
+	@Ignore @Test
 	public void connectAdminTest() throws InterruptedException, IOException {
 		ClientSimple AdminTest1 = new ClientSimple();
 		GUI viewConnectedTest1 = new GUI();
