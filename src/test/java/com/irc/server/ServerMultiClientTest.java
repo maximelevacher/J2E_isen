@@ -283,7 +283,7 @@ public class ServerMultiClientTest {
 		Controller clientTestIHM = new Controller (clientTest1, viewConnectedTest1, loginTest1 );
 		
 		clientTestIHM.startClient();
-		clientTestIHM.onClickOnLoginButton("Testeur1");
+		clientTestIHM.onClickOnLoginButton("Testeur1","");
 		Message msg = new Message();
 		
 		for(int i=0; i<500; i++)
