@@ -162,7 +162,7 @@ public class ServerThread implements Runnable {
 					 }
 				} else if (clientInput.startsWith("%ping")) {
 					sendMessage("Pong!");
-				} else if (clientInput.startsWith("%kick")) {
+				} else if (clientInput.startsWith("%kick") && getNickName().equals("Admin")) {
 					String userToKick = clientInput.split(" ")[1];
 					if (_serverMultiClient.kickClientFromServer(userToKick, false)) {
 						sendMessage("%kick_ok");
@@ -171,7 +171,7 @@ public class ServerThread implements Runnable {
 					} else {
 						sendMessage("%kick_failed");
 					}
-				} else if (clientInput.startsWith("%ban")) {
+				} else if (clientInput.startsWith("%ban") && getNickName().equals("Admin")) {
 					String userToKick = clientInput.split(" ")[1];
 					if (_serverMultiClient.banClientFromServer(userToKick)) {
 						sendMessage("%ban_ok");
