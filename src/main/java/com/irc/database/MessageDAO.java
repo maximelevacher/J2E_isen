@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.Date;
 
 import com.irc.metier.Message;
+import com.mysql.jdbc.PreparedStatement;
 import com.mysql.jdbc.Statement;
 
 public class MessageDAO extends DAO<Message>{
@@ -34,18 +35,20 @@ public class MessageDAO extends DAO<Message>{
 	
 	@Override
 	public Message create(Message obj) {
-		 Statement stmt = null;
+		PreparedStatement stmt = null;
+		String preparedSql = 	"INSERT INTO message(ME_sSender,ME_sReceiver,ME_text,ME_type)" +
+				 				"VALUES (?, ?, ?, 'text')";
 		try {
-			stmt = (Statement) connect.createStatement();
+			stmt = (PreparedStatement) connect.prepareStatement(preparedSql);
+			stmt.setObject(1, obj.getsSender());
+			stmt.setObject(2, obj.getsReceiver());
+			stmt.setObject(3, obj.getMessage());
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	      
-	      String sql = "INSERT INTO message(ME_sSender,ME_sReceiver,ME_text,ME_type)" +
-	                   "VALUES ('"+obj.getsSender()+"', '"+obj.getsReceiver()+"','"+obj.getMessage()+"','text')";
-	      try {
-			stmt.executeUpdate(sql);
+		 
+		try {
+			stmt.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

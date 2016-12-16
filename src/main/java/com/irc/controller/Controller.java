@@ -230,7 +230,10 @@ public class Controller {
 			login.showError("Connexion impossible", "Le pseudonyme ne peut pas être vide.");
 		} else if (username.startsWith("_")) {
 			login.showError("Connexion impossible", "Le pseudonyme ne peut pas commencer par un '_'");
-		} else {
+		} else if (!username.matches("^[a-zA-Z0-9]*$")) {
+			login.showError("Connexion impossible", "Le pseudonyme ne peut contenir que des chiffres et lettres sans accents.");
+		}
+		else {
 			try {
 				client.setNickName(username);
 				_username = username;
