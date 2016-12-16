@@ -257,10 +257,10 @@ public class ClientSimpleTest {
 		GUI viewConnectedTest1 = new GUI();
 		LoginWindow loginTest1 = new LoginWindow();
 		AdminTest1.connectToServer(InetAddress.getLocalHost(), 55555);
-		Controller clientTestIHM = new Controller (AdminTest1, viewConnectedTest1, loginTest1 );
+		Controller AdminTestIHM = new Controller (AdminTest1, viewConnectedTest1, loginTest1 );
 		
-		clientTestIHM.startClient();
-		clientTestIHM.onClickOnLoginButton("Admin","admin");
+		AdminTestIHM.startClient();
+		AdminTestIHM.onClickOnLoginButton("Admin","admin");
 		try {
 			AdminTest1.sendMessage("Test");
 		} catch (IOException e) {
