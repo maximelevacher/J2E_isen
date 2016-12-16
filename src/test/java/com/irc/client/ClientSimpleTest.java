@@ -20,6 +20,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.irc.controller.Controller;
+import com.irc.ihm.GUI;
+import com.irc.ihm.LoginWindow;
+import com.irc.metier.Message;
+
 public class ClientSimpleTest {
 	
 	ServerSocket ss = null;
@@ -245,4 +250,28 @@ public class ClientSimpleTest {
 		} catch (IOException | ClassNotFoundException e) {
 		}
 	}
+	
+	@Test
+	public void connectAdminTest() throws InterruptedException, IOException {
+		ClientSimple AdminTest1 = new ClientSimple();
+		GUI viewConnectedTest1 = new GUI();
+		LoginWindow loginTest1 = new LoginWindow();
+		AdminTest1.connectToServer(InetAddress.getLocalHost(), 55555);
+		Controller AdminTestIHM = new Controller (AdminTest1, viewConnectedTest1, loginTest1 );
+		
+		AdminTestIHM.startClient();
+		AdminTestIHM.onClickOnLoginButton("Admin","admin");
+		try {
+			AdminTest1.sendMessage("Test");
+		} catch (IOException e) {
+			fail("La connexion n'a pas réussie.");
+		}
+		
+		while(true);
+	}
+	
+	
+
 }
+
+

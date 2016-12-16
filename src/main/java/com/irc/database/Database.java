@@ -93,7 +93,7 @@ public class Database {
 	 * @param idSender
 	 *            an id of person who send the message
 	 * @param idEmeter
-	 *            an id of person who recive the message
+	 *            an id of person who receive the message
 	 * @param message
 	 *            Message to save in database
 	 * @param typeMessage

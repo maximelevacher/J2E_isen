@@ -107,7 +107,6 @@ public class ServerMultiClientTest {
 		startServer(server);
 
 		try {
-			// On lance 5 clients qui doivent réussir à se connecter
 			testNbClients(server.CONNECTIONS_LIMIT, server.CONNECTIONS_LIMIT);
 		} catch (InterruptedException | ExecutionException e) {
 		} finally {
@@ -118,6 +117,26 @@ public class ServerMultiClientTest {
 		}
 	}
 
+	@Test
+	public void test1OClientsSend500msg(){
+		
+		final ServerMultiClient server = new ServerMultiClient();
+		startServer(server);
+		int j;
+		for (j=0;j<10;j++){
+			try {
+				// On envoie 500 messages
+				testSendNMessage(500);
+			} catch (Exception e) {
+			} finally {
+				try {
+					server.shutdownServer();
+				} catch (IOException e) {
+				}
+			}
+		}
+	}
+	
 	@Test
 	public void testConnectOverConnectionsLimit() {
 		// On lance le serveur
@@ -255,16 +274,15 @@ public class ServerMultiClientTest {
 		}
 	}
 	
-	/**
+
 	public void sendMessageTest() throws InterruptedException, IOException {
 		ClientSimple clientTest1 = new ClientSimple();
 		GUI viewConnectedTest1 = new GUI();
 		LoginWindow loginTest1 = new LoginWindow();
 		
 		Controller clientTestIHM = new Controller (clientTest1, viewConnectedTest1, loginTest1 );
-		
 		clientTestIHM.startClient();
-		clientTestIHM.onClickOnLoginButton("Testeur1");
+		clientTestIHM.onClickOnLoginButton("Testeur1","");
 		Message msg = new Message();
 		
 		for(int i=0; i<500; i++)
@@ -273,7 +291,7 @@ public class ServerMultiClientTest {
 			Thread.sleep(250);
 		}
 		while(true);
-	}*/
+	}
 	
 	
 

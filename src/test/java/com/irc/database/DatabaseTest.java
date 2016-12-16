@@ -11,6 +11,8 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,29 +36,45 @@ import com.irc.metier.Message;
 
 public class DatabaseTest {
 
-	@Test
-	public void test() {
-		//fail("Not yet implemented");
-	}
-	
 	/**
-	 * Remplissage de la BDD
-	 */
-	public void testEntrerNmsg(int n) {
+	  Remplissage de la BDD
+	 *
+	@Test
+	public void testCreatemsg() {
 		
 		MessageDAO msgDAO = new MessageDAO();
+		Message obj1,obj2;
+		obj1.getsSender();
+		obj1.getsReceiver();
+		obj1.setMessage("Salut");
 		
-		/*try {
-			for(int i=0;i<n;i++){	
-				//msgDAO.create();
+		try {
+			for(int j=0;j<500;j++){	
+				obj2 = msgDAO.create(obj1);
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
 			}
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-			}
-		} catch (IOException e) {
 			
-		}*/
+		}
 	}
+	
 
 }
+	
+	public void testReadmsg(Message obj2) {
+		
+		MessageDAO msgDAO = new MessageDAO();
+		Message obj1,obj2;	
+		
+		try {
+			for(int j=0;j<500;j++){	
+				obj2 = msgDAO.create(obj1);
+			} catch (SQLException e) {
+			
+		}
+	}*/
+	
+
+}
+
