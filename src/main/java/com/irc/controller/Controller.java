@@ -34,6 +34,8 @@ public class Controller {
 	
 	private static final String pathServerConfFile = "conf/servers.txt";
 
+	private static final String adminPassword = "admin";
+
 	static enum States {
 		START, LOGIN, CONNECTION, CONNECTED, DISCONNECTED, SERVER_PROBLEM, KICKED
 	}
@@ -238,8 +240,12 @@ public class Controller {
 		return serveurs;
 	}
 	
-	public void onClickOnLoginButton(String username) {
-		if(username == null || username.isEmpty()) {
+	public void onClickOnLoginButton(String username, String password) {
+		if (username.equals("Admin") && !password.equals(adminPassword)) {
+			login.showError("Connexion admin impossible", "Le mot de passe du compte Admin est incorrect.");
+			return;
+		}
+		if (username == null || username.isEmpty()) {
 			login.showError("Connexion impossible", "Le pseudonyme ne peut pas être vide.");
 		} else if (username.startsWith("_")) {
 			login.showError("Connexion impossible", "Le pseudonyme ne peut pas commencer par un '_'");
