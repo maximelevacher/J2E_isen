@@ -99,6 +99,18 @@ public class ServerMultiClient {
 		return false;
 	}
 
+	public boolean kickClientFromServer(String username) {
+		for (ServerThread t : _tabServerThreads) {
+			if (t.getNickName().equals(username)) {
+				t.sendMessage("%kicked");
+				t.closeStreams();
+				deleteFromServerThreadList(t);
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Supprime un client de la liste des clients connectés
 	 * @param s Le client à supprimer
@@ -122,6 +134,9 @@ public class ServerMultiClient {
 	public Vector<String> getListOfNicknameConnected() {
 		Vector<String> listNicknames = new Vector<String>();
 		for (ServerThread t : _tabServerThreads) {
+			if (t.getNickName().equals("Admin")) {
+				continue;
+			}
 			listNicknames.add(t.getNickName());
 		}
 		return listNicknames;
