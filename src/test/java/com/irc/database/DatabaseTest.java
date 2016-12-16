@@ -12,6 +12,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,13 +36,33 @@ import com.irc.metier.Message;
 
 public class DatabaseTest {
 
-
-	
 	/**
 	  Remplissage de la BDD
 	 *
 	@Test
-	public void testEntrerNmsg(int n) {
+	public void testCreatemsg() {
+		
+		MessageDAO msgDAO = new MessageDAO();
+		Message obj1,obj2;
+		obj1.getsSender();
+		obj1.getsReceiver();
+		obj1.setMessage("Salut");
+		
+		try {
+			for(int j=0;j<500;j++){	
+				obj2 = msgDAO.create(obj1);
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+		}
+	}
+	
+
+}
+	
+	public void testReadmsg(Message obj2) {
 		
 		MessageDAO msgDAO = new MessageDAO();
 		Message obj1,obj2;	
@@ -49,14 +70,11 @@ public class DatabaseTest {
 		try {
 			for(int j=0;j<500;j++){	
 				obj2 = msgDAO.create(obj1);
-			}
-		if (obj2 != msgDAO.find()){
-			fail("Le dernier message lu est différent au dernier message reçu dans la BDD")
-		}
-			} catch () {
+			} catch (SQLException e) {
 			
 		}
 	}*/
-
+	
 
 }
+

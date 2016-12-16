@@ -274,6 +274,7 @@ public class ServerMultiClientTest {
 		}
 	}
 	
+
 	public void sendMessageTest() throws InterruptedException, IOException {
 		ClientSimple clientTest1 = new ClientSimple();
 		GUI viewConnectedTest1 = new GUI();
