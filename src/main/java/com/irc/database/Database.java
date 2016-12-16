@@ -45,6 +45,12 @@ public class Database {
 		}		
 		return conn;	
 	}
+	
+	public static Connection connectToDb() throws SQLException {
+		Connection connection;
+		logger.info("Connexion à la base de donnée: " + DB_URL);
+		return connection = (Connection) DriverManager.getConnection(DB_URL, USER, PASS);
+	}
 
 	/**
 	 * Retourne une liste de chaine de caractère comprenant l'ensemble des
@@ -138,18 +144,18 @@ public class Database {
 		String sql = "SELECT * FROM message WHERE ME_sReceiver = '_everyone' ORDER BY ME_id DESC LIMIT 10";
 		
 		try {
-			conn = Database.getInstance();
-			stmt = (Statement) conn.createStatement();
+			Connection connection = connectToDb();
+			stmt = (Statement) connection.createStatement();
 			ResultSet rs = stmt.executeQuery(sql);
 			while (rs.next()) {
 				Date date = new Date(rs.getTimestamp("ME_lastmodif").getTime());
 				messages.add(new Message(rs.getString("ME_text"), rs.getString("ME_sSender"), rs.getString("ME_sReceiver"), date));
 			}
 			Collections.reverse(messages);
+			connection.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
 		return messages;
 	}
 }

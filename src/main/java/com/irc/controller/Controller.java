@@ -106,15 +106,19 @@ public class Controller {
 							}
 						// Si on recoit une liste
 						} else if (objReceived instanceof Vector) {
-							// Si on recoit une liste de personnes connectées
-							if (((Vector) objReceived).get(0) instanceof String) {
-								view.updateListConnected((Vector<String>) objReceived);
-							// Si on recoit une liste de messages
-							} else if (((Vector) objReceived).get(0) instanceof Message) {
-								for (Message m : (Vector<Message>) objReceived) {
-									DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-									view.appendMessageToUserTab(dateFormat.format(m.getDate()) + " | " + m.getsSender() + " > " + m.getMessage());
+							try {
+								// Si on recoit une liste de personnes connectées
+								if (((Vector) objReceived).get(0) instanceof String) {
+									view.updateListConnected((Vector<String>) objReceived);
+								// Si on recoit une liste de messages
+								} else if (((Vector) objReceived).get(0) instanceof Message) {
+									for (Message m : (Vector<Message>) objReceived) {
+										DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+										view.appendMessageToUserTab(dateFormat.format(m.getDate()) + " | " + m.getsSender() + " > " + m.getMessage());
+									}
 								}
+							} catch (ArrayIndexOutOfBoundsException e) {
+								logger.error("Le vector reçu était vide.");
 							}
 						}
 					} catch (IOException | ClassNotFoundException e) {
