@@ -29,6 +29,7 @@ public class ServerMultiClient {
 	 * Contient les clients connectés au serveur
 	 */
 	private Vector<ServerThread> _tabServerThreads = new Vector<ServerThread>();
+	private Vector<String> _bannedClients = new Vector<String>();
 
 	/**
 	 * Lance le serveur et commence à accepter les connexions vers celui-ci
@@ -99,16 +100,32 @@ public class ServerMultiClient {
 		return false;
 	}
 
-	public boolean kickClientFromServer(String username) {
+	public boolean kickClientFromServer(String username, boolean ban) {
+		String message = null;
+		if (ban) {
+			message = "%banned";
+		} else {
+			message = "%kicked";
+		}
 		for (ServerThread t : _tabServerThreads) {
 			if (t.getNickName().equals(username)) {
-				t.sendMessage("%kicked");
+				t.sendMessage(message);
 				t.closeStreams();
 				deleteFromServerThreadList(t);
 				return true;
 			}
 		}
 		return false;
+	}
+
+	public boolean banClientFromServer(String username) {
+		boolean result = kickClientFromServer(username, true);
+		if (result) {
+			_bannedClients.add(username);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -129,6 +146,15 @@ public class ServerMultiClient {
 			}
 		}
 		return true;
+	}
+
+	public boolean isNicknameBanned(String nickname) {
+		for (String n : _bannedClients) {
+			if (nickname.equals(n)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public Vector<String> getListOfNicknameConnected() {

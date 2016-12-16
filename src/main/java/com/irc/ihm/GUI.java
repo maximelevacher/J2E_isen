@@ -331,6 +331,12 @@ public class GUI extends JFrame implements MouseListener, ChangeListener, Action
 				logger.info("L'Admin a demandé un kick sur: " + username);
 			}
 		});
+		itemBan.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				controller.askForBanUser(username);
+				logger.info("L'Admin a demandé un ban sur: " + username);
+			}
+		});
 		return menu;
 	}
 

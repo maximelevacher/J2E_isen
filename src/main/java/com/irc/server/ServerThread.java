@@ -143,27 +143,42 @@ public class ServerThread implements Runnable {
 			if (clientInput != null) {
 				 if (clientInput.startsWith("%nickname")) {
 					 String nickname = clientInput.split(" ")[1];
-					 if(_serverMultiClient.isNicknameAvailable(nickname)) {
-						 setNickName(nickname);
-						 sendMessage("%nickname_ok");
-						 sendMessage("Bienvenue sur le serveur!");
-						 Database db = new Database();
-						 sendMessage(db.findLastTenMessages());
-						 _serverMultiClient.broadcastMessage(nickname + " vient de se connecter.", this);
-						 _serverMultiClient.broadcastMessage(_serverMultiClient.getListOfNicknameConnected());
+					 // Check si le username est banni
+					 if(_serverMultiClient.isNicknameBanned(nickname)) {
+						 sendMessage("%nickname_banned");
 					 } else {
-						 sendMessage("%nickname_taken");
+						 // Check s'il est dispo
+						 if(_serverMultiClient.isNicknameAvailable(nickname)) {
+							 setNickName(nickname);
+							 sendMessage("%nickname_ok");
+							 sendMessage("Bienvenue sur le serveur!");
+							 Database db = new Database();
+							 sendMessage(db.findLastTenMessages());
+							 _serverMultiClient.broadcastMessage(nickname + " vient de se connecter.", this);
+							 _serverMultiClient.broadcastMessage(_serverMultiClient.getListOfNicknameConnected());
+						 } else {
+							 sendMessage("%nickname_taken");
+						 }
 					 }
 				} else if (clientInput.startsWith("%ping")) {
 					sendMessage("Pong!");
 				} else if (clientInput.startsWith("%kick")) {
 					String userToKick = clientInput.split(" ")[1];
-					if (_serverMultiClient.kickClientFromServer(userToKick)) {
+					if (_serverMultiClient.kickClientFromServer(userToKick, false)) {
 						sendMessage("%kick_ok");
 						_serverMultiClient.broadcastMessage(userToKick + " a été kick du serveur.");
 						_serverMultiClient.broadcastMessage(_serverMultiClient.getListOfNicknameConnected());
 					} else {
 						sendMessage("%kick_failed");
+					}
+				} else if (clientInput.startsWith("%ban")) {
+					String userToKick = clientInput.split(" ")[1];
+					if (_serverMultiClient.banClientFromServer(userToKick)) {
+						sendMessage("%ban_ok");
+						_serverMultiClient.broadcastMessage(userToKick + " a été ban du serveur.");
+						_serverMultiClient.broadcastMessage(_serverMultiClient.getListOfNicknameConnected());
+					} else {
+						sendMessage("%ban_failed");
 					}
 				} else if (clientInput.startsWith("%getListConnected")) {
 					_serverMultiClient.broadcastMessage(_serverMultiClient.getListOfNicknameConnected());

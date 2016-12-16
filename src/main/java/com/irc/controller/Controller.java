@@ -168,6 +168,10 @@ public class Controller {
 			login.showError("Connexion impossible", "Le pseudonyme est déjà pris");
 			_username = null;
 			setState(Controller.States.DISCONNECTED);
+		} else if (message.equals("%nickname_banned")) {
+			login.showError("Banni!", "Le pseudonyme est banni!");
+			_username = null;
+			setState(Controller.States.KICKED);
 		} else if (message.equals("%privateMessageReceiverOffline")) {
 			login.showError("Message privé annulé", "Impossible d'envoyer un message privé.\nL'utilisateur est déconnecté.");
 		} else if (message.equals("%kick_failed")) {
@@ -176,6 +180,15 @@ public class Controller {
 			logger.info("Kick réussi.");
 		} else if (message.equals("%kicked")) {
 			login.showError("Kicked!", "Vous avez été kick!");
+			_username = null;
+			setState(Controller.States.KICKED);
+		} else if (message.equals("%ban_failed")) {
+			login.showError("Ban impossible", "Le ban a echoué.");
+		} else if (message.equals("%ban_ok")) {
+			logger.info("Ban réussi.");
+		} else if (message.equals("%banned")) {
+			login.showError("Banned!", "Vous avez été ban!");
+			_username = null;
 			setState(Controller.States.KICKED);
 		} else {
 			// Si ce n'est pas une commande on affiche le message
@@ -249,6 +262,8 @@ public class Controller {
 			login.showError("Connexion impossible", "Le pseudonyme ne peut pas être vide.");
 		} else if (username.startsWith("_")) {
 			login.showError("Connexion impossible", "Le pseudonyme ne peut pas commencer par un '_'");
+		} else if (username.length() > 20) {
+			login.showError("Connexion impossible", "Le pseudonyme ne peut pas dépasser 20 caractères.");
 		} else if (!username.matches("^[a-zA-Z0-9]*$")) {
 			login.showError("Connexion impossible", "Le pseudonyme ne peut contenir que des chiffres et lettres sans accents.");
 		}
@@ -266,6 +281,18 @@ public class Controller {
 	public void askForKickUser(String username) {
 		try {
 			client.sendMessage("%kick " + username);
+		} catch (IOException e) {
+			logger.error("Impossible d'envoyer un message.", e);
+			try {
+				client.disconnectFromServer();
+			} catch (IOException e1) {
+			}
+		}
+	}
+
+	public void askForBanUser(String username) {
+		try {
+			client.sendMessage("%ban " + username);
 		} catch (IOException e) {
 			logger.error("Impossible d'envoyer un message.", e);
 			try {
